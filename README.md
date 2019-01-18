@@ -1,6 +1,11 @@
 # README #
 
 Sistem Informasi Manajemen Mutu Rumah Sakit
+Adalah aplikasi untuk memonitor mutu unit pada sebuah instansi rumah sakit.
+Dalam tiap unit terdapat indikator-indikator yang nantinya akan dilakukan
+penilaian setiap hari terhadap numerator dan denumerator. 
+Hasil akhirnya adalah dapat mengetahui nilai rata-rata capaian standar yang telah
+ditentukan sebelumnya.
 
 ### Informasi Pengembang ###
 
