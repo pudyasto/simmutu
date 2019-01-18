@@ -1,0 +1,13 @@
+/apps/config/database.php
+/apps/config/config.php
+/apps/config/ion_auth.php
+
+/public/files/*
+!/public/files/template/
+!/public/files/ttfontdata/
+!/public/files/.htaccess
+
+/apps/cache/
+
+/nbproject/*
+/nbproject/private/

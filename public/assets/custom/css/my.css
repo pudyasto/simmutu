@@ -1,0 +1,55 @@
+/*
+***************************************************************
+Script : my.css 
+Version : 1.0.0
+Date : May 17, 2018 / 2:57:46 PM
+Author : Pudyasto
+Email : mr.pudyasto@gmail.com
+Description : 
+***************************************************************
+*/
+/* 
+    Created on : May 17, 2018, 2:57:46 PM
+    Author     : Pudyasto
+*/
+
+tfoot {
+    display: table-header-group;
+}
+
+.chk-datatable{
+    height: 9px !important; 
+    padding-left: 0px !important; 
+}
+
+.form-control{
+    border-radius: 0px !important;
+}
+
+.select-search{
+    z-index: 500;
+}
+
+.form-control:focus {
+    border-color: #4CAF50;
+    outline: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+}
+
+.dt-buttons>.btn>span {
+    top: 0px !important;
+    margin-left: 0px !important;
+}
+
+body, html {
+    font-weight: normal;
+}
+
+td.details-control {
+    background: url('/assets/img/datatable/details_open.png') no-repeat center center;
+    cursor: pointer;
+}
+tr.shown td.details-control {
+    background: url('/assets/img/datatable/details_close.png') no-repeat center center;
+}

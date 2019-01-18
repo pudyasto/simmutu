@@ -1,0 +1,26 @@
+/*
+***************************************************************
+Script : sweetalert2.css
+Version : 
+Date : Feb 22, 2018 - 11:20:34 AM
+Author : Pudyasto Adi W.
+Email : mr.pudyasto@gmail.com
+Description : 
+***************************************************************
+*/
+/* 
+    Created on : Feb 22, 2018, 11:20:34 AM
+    Author     : pudyasto
+*/
+
+.swal2-popup .swal2-styled.swal2-confirm {
+    border: 0;
+    border-radius: 0px;
+    background-color: #20a8d8;
+    color: #fff;
+    font-size: 1.0625em;
+}
+
+.swal2-popup {
+    border-radius: 0px;
+}
