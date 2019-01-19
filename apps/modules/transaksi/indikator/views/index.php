@@ -124,7 +124,7 @@
         $(".btn-refersh").click(function () {
             table.ajax.reload();
         });
-        $("#unit_id").change(function(){
+        $("#unit_id").change(function () {
             get_data_table();
         });
         $(".btn-delete-all").click(function () {
@@ -263,14 +263,36 @@
                 "targets": 3
             }
         ];
-        var orders = [[2, "desc"],[1, "asc"]];
-        set_datatable('dataTable', "<?= site_url('indikator/json_dgview'); ?>", column_list, column_def, null, orders,2,6,[[-1],['All']],null,false);
+        var orders = [[2, "desc"], [1, "asc"]];
+        set_datatable('dataTable', "<?= site_url('indikator/json_dgview'); ?>", column_list, column_def, null, orders, 2, 6, [[-1], ['All']], null, false);
         get_data_table();
         function get_data_table() {
             glob_where_datatable = [
                 {"name": "unit_id", "value": $("#unit_id").val()}
             ];
             table.ajax.reload();
+        }
+        var indikator_id = "<?= $this->uri->segment(5); ?>";
+        if (indikator_id) {
+            $('#form-modal').modal("show");
+            $.ajax({
+                type: "GET",
+                url: "<?=site_url('indikator/form_trn_indikator');?>",
+                data: {"id": indikator_id},
+                beforeSend: function () {
+                    $(".modal-dialog").css("min-width", "90%");
+                    $("#form-modal-content").html("");
+                },
+                success: function (resp) {
+                    $("#form-modal-content").html(resp);
+                    set_controls();
+                },
+                error: function (event, textStatus, errorThrown) {
+                    swal("Kesalahan!", 'Pesan: ' + textStatus + ' , HTTP: ' + errorThrown, "error");
+                }
+            });
+            var modal = $(this);
+            modal.find('.modal-title').text("");
         }
     });
 

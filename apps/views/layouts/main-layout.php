@@ -50,6 +50,12 @@
 
     </head>
     <body class="theme-red">
+        <?php
+            $class_name = $this->uri->segment(1);
+            $menu_app = $this->rbac->menu_app($class_name);
+//            var_dump($menu_app);
+//            exit;
+        ?>
         <!-- Page Loader -->
         <div class="page-loader-wrapper">
             <div class="loader">
@@ -222,9 +228,6 @@
                 <!-- Menu -->
                 <div class="menu">
                     <ul class="list">
-                        <?php
-                            $class_name = $this->uri->segment(1);
-                        ?>
                         <li class="header">MAIN NAVIGATION</li>
                         <li class="<?=($class_name==="main" || $class_name==="") ? "active" : "";?>">
                             <a href="<?= site_url(); ?>">
@@ -237,7 +240,6 @@
                         $main_page_name = "";
                         $page_name = "";
                         $page_desc = "";
-                        $menu_app = $this->rbac->menu_app($class_name);
                         if (is_array($menu_app)) {
                             foreach ($menu_app['menus'] as $mn) {
                                 if (!empty($mn['menu_name']) && $mn['link'] == "#") {
@@ -269,13 +271,7 @@
                                         <?php
                                     }
                                 } else {
-                                    if ($mn['active']) {
-                                        $main_page_name = "Home";
-                                        $page_name = $mn['name'];
-                                        $page_desc = $mn['description'];
-                                    }
                                     ?>
-
                                     <li class="<?=$mn['active'];?>">
                                         <a href="<?php echo site_url($mn['link']); ?>" title="<?php echo $mn['description']; ?>">
                                             <i class="material-icons"><?php echo $mn['icon']; ?></i>
@@ -311,7 +307,7 @@
                 <!-- Footer -->
                 <div class="legal">
                     <div class="copyright">
-                        &copy; 2018 <a href="javascript:void(0);"><?= $this->apps->name; ?></a>
+                        &copy; 2018 <a href="javascript:void(0);"><?= $this->apps->copyright; ?></a>
                     </div>
                     <div class="version">
                         <b>Version: </b> <?= $this->apps->ver; ?>
@@ -455,9 +451,6 @@
         
         <!-- Datatable -->
         <script src="<?= base_url('assets/plugins/datatables/datatables.min.js'); ?>"></script>
-
-        <!-- Sparkline Chart Plugin Js -->
-        <script src="<?= base_url('assets/adminbsb/plugins/jquery-sparkline/jquery.sparkline.js'); ?>"></script>
 
         <script src="<?= base_url('assets/plugins/numeral/numeral.min.js'); ?>" type="text/javascript"></script>
         <script src="<?= base_url('assets/plugins/sweetalert2/sweetalert2.all.js'); ?>"></script> 

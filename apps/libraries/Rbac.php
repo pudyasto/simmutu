@@ -106,7 +106,9 @@ class Rbac {
         $query = $this->ci->db->get('menus');
         $result = $query->result_array();
         foreach ($result as $val){
-            if($val['mainmenuid']==$id){
+            if($val['id']===$id && $val['link']!=="#"){
+                return ' active ';
+            }elseif($val['mainmenuid']==$id){
                 return ' active ';
             }else{
                 return false;

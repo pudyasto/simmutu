@@ -22,4 +22,203 @@ class Main_qry extends CI_Model {
     public function __construct() {
         parent::__construct();
     }
+
+    public function get_m_unit() {
+        $unit_id = $this->uri->segment(3);
+        $res = $this->db->get_where('m_unit', array('id' => $unit_id))->row();
+        if($res){
+            return (array) $res;
+        }else{
+            return false;
+        }
+    }
+    
+    public function get_widget_top() {
+        $jml_unit = $this->db->get_where("m_unit", array('stat' => 'aktif'))->num_rows();
+        $jml_indikator = $this->db->get_where("m_indikator", array('stat' => 'aktif'))->num_rows();
+        $str_all_unit = "SELECT 
+                                CAST((SUM(hasil_all) / COUNT(unit_id)) AS DECIMAL (18 , 2 )) AS hasil_avg
+                            FROM
+                                (SELECT 
+                                    unit_id, SUM(hasil) / COUNT(indikator_id) AS hasil_all
+                                FROM
+                                    (SELECT 
+                                    m_indikator.id AS indikator_id,
+                                        m_unit.id AS unit_id,
+                                        SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / 31 AS hasil
+                                FROM
+                                    m_unit
+                                LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
+                                LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                                GROUP BY trn_indikator.indikator_id , m_indikator.unit_id) AS avg_unit
+                                GROUP BY unit_id
+                        ) avg_all";
+        $row_all_unit = $this->db->query($str_all_unit)->row();
+        if ($row_all_unit) {
+            $avg_all_unit = $row_all_unit->hasil_avg;
+        } else {
+            $avg_all_unit = 0;
+        }
+        $periode_nilai = date_id(date('Y-m-d'));
+
+        $res = array(
+            'jml_unit' => $jml_unit,
+            'jml_indikator' => $jml_indikator,
+            'avg_all_unit' => $avg_all_unit,
+            'periode_nilai' => $periode_nilai,
+        );
+
+        return $res;
+    }
+
+    public function get_unit_mutu_avg() {
+        $order = $this->input->get('order');
+        if (!$order) {
+            $order = "DESC";
+        }
+        $str = "SELECT 
+                    m_unit.id,
+                    m_unit.nama,
+                    m_unit.keterangan, 
+                    ROUND(SUM(hasil) / COUNT(indikator_id)) AS hasil_all
+                FROM m_unit 
+                LEFT JOIN 
+                    (SELECT 
+                        m_indikator.id AS indikator_id,
+                            m_unit.id AS unit_id,
+                            SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / 31 AS hasil
+                    FROM
+                        m_unit
+                    LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
+                    LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                    GROUP BY trn_indikator.indikator_id , m_indikator.unit_id) AS avg_unit
+                ON m_unit.id = avg_unit.unit_id
+                WHERE m_unit.stat = 'Aktif'
+                GROUP BY m_unit.id, m_unit.nama
+                ORDER BY ROUND(SUM(hasil) / COUNT(indikator_id)) {$order}
+                LIMIT 10";
+        $qry = $this->db->query($str);
+        if ($qry->num_rows() > 0) {
+            return $qry->result_array();
+        } else {
+            return false;
+        }
+    }
+
+    public function get_mutu_per_unit() {
+        $unit_id = $this->input->get('unit_id');
+        $month = date('m');
+        $year = date('Y');
+        $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $tgl_tran = date('Y-m');
+        $header = array(
+            'No.',
+            'ID Indikator',
+            'Indikator',
+            'Jenis',
+            'Standar',
+        );
+        $columns = "";
+        $total = "";
+        for ($i = 1; $i <= $days; $i++) {
+            $num_day = str_pad($i, 2, "0", STR_PAD_LEFT);
+            $columns .= " , SUM(ROUND(CASE WHEN date_format(trn_indikator.tgl_tran,'%d') = '{$num_day}' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) AS h_" . $num_day;
+            $total .= " SUM(ROUND(CASE WHEN date_format(trn_indikator.tgl_tran,'%d') = '{$num_day}' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) +";
+            $cell = array('data' => $num_day, 'style' => 'width: 10px');
+            array_push($header, $cell);
+        }
+        if($total){
+            $total = substr($total, 0, strlen($total) - 1);
+            $total = " , ROUND((" . $total . ") / " . $days . ") AS total";
+            array_push($header, "Avg");
+        }
+        if (!$columns) {
+            return false;
+        }
+        
+        $str = "SELECT @rank:=@rank+1 AS nourut, nilai_indikator.* FROM ( SELECT 
+                    m_indikator.id AS id_indikator,
+                    m_indikator.nama AS nama_indikator,
+                    m_jenis.nama AS nama_jenis,
+                    m_indikator.standar
+                    {$columns}
+                    {$total}
+                FROM m_unit
+                LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
+                LEFT JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
+                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%Y-%m') = '{$tgl_tran}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                WHERE m_unit.id = '{$unit_id}'
+                GROUP BY m_indikator.nama,
+                    m_jenis.nama,
+                    m_indikator.standar ) nilai_indikator
+                CROSS JOIN (SELECT @rank:=0) AS nos";
+        $qry = $this->db->query($str);
+        if ($qry->num_rows() > 0) {
+            $this->load->library('table');
+            $template = array(
+                'table_open' => '<table class="table table-sm table-hover table-bordered table-nilai-indikator">',
+                'thead_open' => '<thead>',
+                'thead_close' => '</thead>',
+                'heading_row_start' => '<tr>',
+                'heading_row_end' => '</tr>',
+                'heading_cell_start' => '<th>',
+                'heading_cell_end' => '</th>',
+                'tbody_open' => '<tbody>',
+                'tbody_close' => '</tbody>',
+                'row_start' => '<tr>',
+                'row_end' => '</tr>',
+                'cell_start' => '<td>',
+                'cell_end' => '</td>',
+                'row_alt_start' => '<tr>',
+                'row_alt_end' => '</tr>',
+                'cell_alt_start' => '<td>',
+                'cell_alt_end' => '</td>',
+                'table_close' => '</table>'
+            );
+            $this->table->set_heading($header);
+            $this->table->set_template($template);
+            echo $this->table->generate($qry);                
+        } else {
+            return false;
+        }
+    }
+
+    public function get_mutu_indikator() {
+        $unit_id = $this->input->get('unit_id');
+        $tgl_tran = date('Y-m');
+        $columns = "";
+        $indikator = $this->db->get_where("m_indikator", array("unit_id" => $unit_id))->result_array();
+        $data_indikator = array();
+        if($indikator){
+            foreach ($indikator as $value) {
+                $columns .= " , SUM(ROUND(CASE WHEN m_indikator.id = '".$value['id']."' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) AS i_" . $value['id'];
+                $data_indikator["i_".$value['id']] = $value['nama'];
+            }
+        }else{
+            return false;
+        }
+        
+        if (!$columns) {
+            return false;
+        }
+        
+        $str = "SELECT date_format(trn_indikator.tgl_tran,'%d') AS tgl_tran
+                    {$columns}
+                FROM m_unit
+                LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
+                LEFT JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
+                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%Y-%m') = '{$tgl_tran}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                WHERE m_unit.id = '{$unit_id}'
+                GROUP BY trn_indikator.tgl_tran";
+        $qry = $this->db->query($str);
+        if ($qry->num_rows() > 0) {
+            $res = array(
+                'data' => $qry->result_array(),
+                'data_indkator' => $data_indikator,
+            );
+            return $res;
+        }else{
+            return false;
+        }
+    }
 }

@@ -58,7 +58,8 @@ class Indikator extends MY_Controller {
     }
 
     public function index() {
-        $this->_init_add();
+        $unit_id = $this->uri->segment(3);
+        $this->_init_add($unit_id);
         $this->template
                 ->title($this->msg_main,  $this->apps->name)
                 ->set_layout('main-layout')
@@ -110,8 +111,7 @@ class Indikator extends MY_Controller {
         }
     }
 
-    private function _init_add() {
-
+    private function _init_add($unit_id = null) {
         $this->data['form'] = array(
             'id' => array(
                 'type' => 'hidden',
@@ -128,7 +128,7 @@ class Indikator extends MY_Controller {
                         'data-live-search' => 'true',
                     ),
                     'data'     => $this->data['unit_id'],
-                    'value'   => set_value('unit_id'),
+                    'value'   => $unit_id,
                     'name'     => 'unit_id',
             ),
             'jenis_id'=> array(
@@ -495,6 +495,32 @@ class Indikator extends MY_Controller {
             echo json_encode($res);
         }
     }
+    
+    public function get_chart_nilai_unit() {
+        $res = $this->indikator_qry->get_chart_nilai_unit();
+        echo json_encode($res);
+    }
+    
+    public function json_dgview_trn_indikator() {
+        $indikator_id = $this->input->post('indikator_id');
+        $columns = array('tgl_tran', 'keterangan', 'num', 'denum', 'hasil', 'tgl_last',);
+        $table = " (SELECT indikator_id,
+                            tgl_tran,
+                            keterangan,
+                            num,
+                            denum,
+                            ROUND((num / denum),2) AS hasil,
+                            user_id,
+                            tgl_add,
+                            tgl_edit,
+                            CASE WHEN tgl_edit IS NULL THEN tgl_add
+                            ELSE tgl_edit END AS tgl_last
+                         FROM trn_indikator
+                         WHERE indikator_id = '{$indikator_id}') AS trn_indikator ";
+        $index = "tgl_tran";
+        $output = $this->paw_table->output($columns, $table, $index);
+        echo $output;
+    }
 
     private function validate_trn_indikator() {
         $config = array(
@@ -526,27 +552,6 @@ class Indikator extends MY_Controller {
         } else {
             return true;
         }
-    }
-    
-    public function json_dgview_trn_indikator() {
-        $indikator_id = $this->input->post('indikator_id');
-        $columns = array('tgl_tran', 'keterangan', 'num', 'denum', 'hasil', 'tgl_last',);
-        $table = " (SELECT indikator_id,
-                            tgl_tran,
-                            keterangan,
-                            num,
-                            denum,
-                            ROUND((num / denum),2) AS hasil,
-                            user_id,
-                            tgl_add,
-                            tgl_edit,
-                            CASE WHEN tgl_edit IS NULL THEN tgl_add
-                            ELSE tgl_edit END AS tgl_last
-                         FROM trn_indikator
-                         WHERE indikator_id = '{$indikator_id}') AS trn_indikator ";
-        $index = "tgl_tran";
-        $output = $this->paw_table->output($columns, $table, $index);
-        echo $output;
     }
     
     private function _init_add_trn_indikator($indikator_id) {

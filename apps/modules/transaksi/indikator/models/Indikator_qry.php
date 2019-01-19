@@ -48,6 +48,49 @@ class Indikator_qry extends CI_Model {
         return $query->result_array();
     }
 
+    public function get_chart_nilai_unit() {
+        $indikator_id = $this->input->get('indikator_id');
+        $month = date('m');
+        $year = date('Y');
+        $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $tgl_tran = date('Y-m');
+        $str = "SELECT date_format(trn_indikator.tgl_tran,'%d') AS hari,
+                    trn_indikator.num,
+                    trn_indikator.denum,
+                    ROUND((trn_indikator.num / trn_indikator.denum), 2) AS hasil
+                FROM trn_indikator
+                WHERE date_format(trn_indikator.tgl_tran,'%Y-%m') = '{$tgl_tran}'
+                AND trn_indikator.indikator_id = '{$indikator_id}'
+                ORDER BY tgl_tran ASC";
+        $qry = $this->db->query($str);
+        if($qry->num_rows()>0){
+            $data = $qry->result_array();
+            $array = array();
+            for($i=1;$i<=$days;$i++){
+                $array[$i]['hari'] = str_pad($i, 2, "0", STR_PAD_LEFT);
+                $array[$i]['num'] = 0; 
+                $array[$i]['denum'] = 0; 
+                $array[$i]['hasil'] = 0; 
+                foreach ($data as $value) {
+                    if($i==(int) $value['hari']){
+                        $array[$i]['hari'] = str_pad($i, 2, "0", STR_PAD_LEFT);
+                        $array[$i]['num'] = $value['num']; 
+                        $array[$i]['denum'] = $value['denum']; 
+                        $array[$i]['hasil'] = $value['hasil']; 
+                    }
+                }
+            }
+        }else{
+            for($i=1;$i<=$days;$i++){
+                $array[$i]['hari'] = str_pad($i, 2, "0", STR_PAD_LEFT);
+                $array[$i]['num'] = 0; 
+                $array[$i]['denum'] = 0; 
+                $array[$i]['hasil'] = 0; 
+            }
+        }
+        return $array;
+    }
+    
     public function get_data_indikator($id) {
         $str = "SELECT 
                     m_indikator.id,

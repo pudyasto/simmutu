@@ -84,7 +84,7 @@
             <table class="table table-hover table-bordered tableTrnIndikator" style="width: 100%;">
                 <thead>
                     <tr>
-                        <th style="width: 250px;text-align: center;">Tgl Penilaian</th>
+                        <th style="width: 100px;text-align: center;">Tgl Penilaian</th>
                         <th style="text-align: center;">Keterangan</th>
                         <th style="width: 80px;text-align: center;">Numerator</th>
                         <th style="width: 80px;text-align: center;">Denumerator</th>
@@ -95,6 +95,11 @@
             </table>
         </div>
     </div>
+    <div class="col-md-12">
+        <div style="height: 350px">
+            <canvas id="bar-penilaian-unit"></canvas>
+        </div>
+    </div>
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" aria-label="Close">
@@ -102,6 +107,8 @@
     </button>
 </div>
 
+<!-- Chart Js -->
+<script src="<?= base_url('assets/adminbsb/plugins/chartjs/Chart.bundle.min.js'); ?>"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         var column_list_trn_indikator = [
@@ -138,7 +145,7 @@
         table_trn_indikator = $('.tableTrnIndikator').DataTable({
             "bProcessing": true,
             "bServerSide": true,
-            "lengthMenu": [[50, 100 ,-1], [50, 100, "All"]],
+            "lengthMenu": [[5, 10, 20, 50, 100 ,-1], [5, 10, 20, 50, 100, "All"]],
             "columnDefs": column_def_trn_indikator ,
             "columns": column_list_trn_indikator ,
             "order": [[0, "desc"]],
@@ -202,8 +209,10 @@
                 "sInfoEmpty": "0 - 0 / 0",
                 "infoFiltered": "(_MAX_)",
                 "oPaginate": {
-                    "sPrevious": "<i class='fa fa-angle-double-left'></i>",
-                    "sNext": "<i class='fa fa-angle-double-right'></i>"
+                    "sFirst": "<i class='material-icons'>first_page</i>",
+                    "sPrevious": "<i class='material-icons'>chevron_left</i>",
+                    "sNext": "<i class='material-icons'>chevron_right</i>",
+                    "sLast": "<i class='material-icons'>last_page</i>"
                 }
             }
         });
@@ -261,5 +270,125 @@
                 }
             });
         });
+        
+        get_chart_nilai_unit();
     });
+    
+    function get_chart_nilai_unit() {
+        var indikator_id = $('#indikator_id').val();
+        $.ajax({
+            type: "GET",
+            url: "<?= site_url('indikator/get_chart_nilai_unit'); ?>",
+            data: {"indikator_id": indikator_id},
+            beforeSend: function () {
+                if (typeof chart_penilaian_unit != 'undefined') {
+                    chart_penilaian_unit.destroy();
+                }
+            },
+            success: function (resp) {
+                if (resp) {
+                    var obj = jQuery.parseJSON(resp);
+                    var PDataNilai = [];
+                    var PLabel = [];
+                    $.each(obj, function (key, data) {
+                        PDataNilai.push(data.hasil * 100);
+                        PLabel.push(data.hari);
+                    });
+                    var chartOpt = {
+                        //Boolean - Whether we should show a stroke on each segment
+                        segmentShowStroke: true,
+                        //String - The colour of each segment stroke
+                        segmentStrokeColor: '#fff',
+                        //Number - The width of each segment stroke
+                        segmentStrokeWidth: 1,
+                        //Number - The percentage of the chart that we cut out of the middle
+                        percentageInnerCutout: 0, // This is 0 for Pie charts
+                        //Number - Amount of animation steps
+                        animationSteps: 100,
+                        //String - Animation easing effect
+                        animationEasing: 'easeOutBounce',
+                        //Boolean - Whether we animate the rotation of the Doughnut
+                        animateRotate: true,
+                        //Boolean - Whether we animate scaling the Doughnut from the centre
+                        animateScale: false,
+                        //Boolean - whether to make the chart responsive to window resizing
+                        responsive: true,
+                        // Boolean - whether to maintain the starting aspect ratio or not when responsive, if set to false, will take up entire container
+                        maintainAspectRatio: false,
+                        //String - A legend template
+                        legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>',
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            fontSize: 9,
+                            boxWidth: 20
+                        },
+                        scales: {
+                            xAxes: [{
+                                    stacked: true
+                                }],
+                            yAxes: [{
+                                    stacked: true,
+                                    ticks: {
+                                        callback: function (value, index, values) {
+                                            return numeral(value).format('0,0');
+                                        }
+                                    }
+                                }]
+                        },
+                        tooltips: {
+                            callbacks: {
+                                title: function (tooltipItem, data) {
+                                    return "Tanggal " + data['labels'][tooltipItem[0]['index']];
+                                },
+                                label: function (tooltipItem, data) {
+                                    return numeral(tooltipItem.yLabel).format('0,0') + "%";
+                                }
+                            },
+                            titleFontSize: 16,
+                            titleFontColor: '#fff',
+                            bodyFontColor: '#fff',
+                            bodyFontSize: 14,
+                            displayColors: true
+                        },
+                        title: {
+                            display: true,
+                            text: 'Grafik Penilaian Unit '
+                        },
+                        chartArea: {
+                            backgroundColor: 'rgba(255, 255, 255, 1)'
+                        }
+                    };
+
+                    var config = {
+                        type: 'line',
+                        data: {
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    data: PDataNilai,
+                                    backgroundColor: 'rgb(244, 67, 54)',
+                                    borderColor: 'rgb(76, 175, 80)',
+                                    fill: false,
+                                    lineTension: 0.1,
+                                    label: 'Nilai Unit Per Hari'
+                                }
+                            ],
+
+                            labels: PLabel
+                        },
+                        options: chartOpt
+                    };
+                    var my_chart = $('#bar-penilaian-unit').get(0).getContext('2d');
+                    if (typeof chart_penilaian_unit != 'undefined') {
+                        chart_penilaian_unit.destroy();
+                    }
+                    chart_penilaian_unit = new Chart(my_chart, config);
+                }
+            },
+            error: function (event, textStatus, errorThrown) {
+                console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
+            }
+        });
+    }
 </script>

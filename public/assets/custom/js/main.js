@@ -22,6 +22,21 @@ function logout() {
     location.replace(base_url('access/logout/'));
 }
 
+window.chartArrayColors = [
+	'rgb(255, 99, 99)',
+	'rgb(249, 162, 180)',
+	'rgb(255, 159, 64)',
+	'rgb(255, 205, 86)',
+	'rgb(75, 192, 192)',
+	'rgb(99, 169, 255)',
+	'rgb(99, 233, 255)',
+	'rgb(153, 102, 255)',
+	'rgb(255, 99, 255)',
+	'rgb(201, 203, 207)',
+	'rgb(201, 203, 150)',
+	'rgb(201, 203, 100)'
+];
+
 window.chartColors = {
 	red: 'rgb(255, 99, 132)',
 	orange: 'rgb(255, 159, 64)',
