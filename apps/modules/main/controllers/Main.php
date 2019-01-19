@@ -80,7 +80,7 @@ class Main extends MY_Controller {
                             m_unit
                         LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
                         LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
-                        GROUP BY trn_indikator.indikator_id , m_indikator.unit_id) AS avg_unit
+                        GROUP BY m_indikator.id, m_unit.id) AS avg_unit
                     ON m_unit.id = avg_unit.unit_id
                     WHERE m_unit.stat = 'Aktif'
                     GROUP BY m_unit.id, m_unit.nama) AS avg_unit ";

@@ -50,7 +50,7 @@ class Main_qry extends CI_Model {
                                     m_unit
                                 LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
                                 LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
-                                GROUP BY trn_indikator.indikator_id , m_indikator.unit_id) AS avg_unit
+                                GROUP BY m_indikator.id , m_unit.id) AS avg_unit
                                 GROUP BY unit_id
                         ) avg_all";
         $row_all_unit = $this->db->query($str_all_unit)->row();
@@ -91,7 +91,7 @@ class Main_qry extends CI_Model {
                         m_unit
                     LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
                     LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
-                    GROUP BY trn_indikator.indikator_id , m_indikator.unit_id) AS avg_unit
+                    GROUP BY m_indikator.id , m_unit.id) AS avg_unit
                 ON m_unit.id = avg_unit.unit_id
                 WHERE m_unit.stat = 'Aktif'
                 GROUP BY m_unit.id, m_unit.nama
