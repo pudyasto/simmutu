@@ -148,7 +148,8 @@ class Main_qry extends CI_Model {
                 LEFT JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
                 LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%Y-%m') = '{$tgl_tran}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
                 WHERE m_unit.id = '{$unit_id}'
-                GROUP BY m_indikator.nama,
+                GROUP BY m_indikator.id,
+                    m_indikator.nama,
                     m_jenis.nama,
                     m_indikator.standar ) nilai_indikator
                 CROSS JOIN (SELECT @rank:=0) AS nos";
