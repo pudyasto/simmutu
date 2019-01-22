@@ -31,6 +31,10 @@ ditentukan sebelumnya.
 * Gunakan VirtualHost dan arahkan ke folder public/
 * Jalankan Aplikasi
 
+* Masukkan User dan Password Berikut ini
+    - User : Administrator
+    - Pass : 3335
+
 ### Deskripsi komponen yang digunakan ###
 
 * AdminBSB HTML Template - https://github.com/gurayyarar/AdminBSBMaterialDesign
