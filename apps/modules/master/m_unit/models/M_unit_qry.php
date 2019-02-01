@@ -49,7 +49,7 @@ class M_unit_qry extends CI_Model {
                     $this->msg = "Data Berhasil Disimpan";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && empty($array['stat'])) {
+            } elseif (!empty($array['id']) && empty($array['state'])) {
                 $this->db->where('id', $array['id']);
                 $resl = $this->db->update('m_unit', $array);
                 if (!$resl) {
@@ -62,7 +62,7 @@ class M_unit_qry extends CI_Model {
                     $this->msg = "Data Berhasil Diupdate";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && ($array['stat']=="delete")) {
+            } elseif (!empty($array['id']) && ($array['state']=="delete")) {
                 $this->db->where('id', $array['id']);
                 $resl = $this->db->delete('m_unit');
                 if (!$resl) {
@@ -75,7 +75,7 @@ class M_unit_qry extends CI_Model {
                     $this->msg = "Data Berhasil Dihapus";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && ($array['stat']=="deleteall")) {
+            } elseif (!empty($array['id']) && ($array['state']=="deleteall")) {
                 $this->db->trans_begin();
                 foreach ($array['id'] as $value) {
                     $this->db->where('id', $value);

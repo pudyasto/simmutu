@@ -25,7 +25,7 @@ class Main_qry extends CI_Model {
 
     public function get_m_unit() {
         $unit_id = $this->uri->segment(3);
-        $res = $this->db->get_where('m_unit', array('id' => $unit_id))->row();
+        $res = $this->db->get_where('m_unit', array('id' => $unit_id,'stat' => 'Aktif'))->row();
         if($res){
             return (array) $res;
         }else{
@@ -34,8 +34,16 @@ class Main_qry extends CI_Model {
     }
     
     public function get_widget_top() {
-        $jml_unit = $this->db->get_where("m_unit", array('stat' => 'aktif'))->num_rows();
-        $jml_indikator = $this->db->get_where("m_indikator", array('stat' => 'aktif'))->num_rows();
+        $periode = $this->input->get('periode');
+        if(!$periode){
+            $periode = date("m-Y");
+        }
+        $mY = explode("-", $periode);
+        $month = $mY[0];
+        $year = $mY[1];
+        $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $jml_unit = $this->db->get_where("m_unit", array('stat' => 'Aktif'))->num_rows();
+        $jml_indikator = $this->db->get_where("m_indikator", array('stat' => 'Aktif'))->num_rows();
         $str_all_unit = "SELECT 
                                 CAST((SUM(hasil_all) / COUNT(unit_id)) AS DECIMAL (18 , 2 )) AS hasil_avg
                             FROM
@@ -45,21 +53,22 @@ class Main_qry extends CI_Model {
                                     (SELECT 
                                     m_indikator.id AS indikator_id,
                                         m_unit.id AS unit_id,
-                                        SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / 31 AS hasil
+                                        SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
                                 FROM
                                     m_unit
                                 LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
-                                LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                                LEFT JOIN (SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%m-%Y') = '{$periode}') trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                                WHERE m_indikator.stat = 'Aktif'
                                 GROUP BY m_indikator.id , m_unit.id) AS avg_unit
                                 GROUP BY unit_id
                         ) avg_all";
         $row_all_unit = $this->db->query($str_all_unit)->row();
         if ($row_all_unit) {
-            $avg_all_unit = $row_all_unit->hasil_avg;
+            $avg_all_unit = (float) $row_all_unit->hasil_avg;
         } else {
             $avg_all_unit = 0;
         }
-        $periode_nilai = date_id(date('Y-m-d'));
+        $periode_nilai = month_id($year."-".$month);
 
         $res = array(
             'jml_unit' => $jml_unit,
@@ -73,6 +82,14 @@ class Main_qry extends CI_Model {
 
     public function get_unit_mutu_avg() {
         $order = $this->input->get('order');
+        $periode = $this->input->get('periode');
+        $days = 0;
+        if($periode){
+            $mY = explode("-", $periode);
+            $month = $mY[0];
+            $year = $mY[1];
+            $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        }
         if (!$order) {
             $order = "DESC";
         }
@@ -86,11 +103,12 @@ class Main_qry extends CI_Model {
                     (SELECT 
                         m_indikator.id AS indikator_id,
                             m_unit.id AS unit_id,
-                            SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / 31 AS hasil
+                            SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
                     FROM
                         m_unit
                     LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
-                    LEFT JOIN trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                    LEFT JOIN (SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%m-%Y') = '{$periode}') trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                    WHERE m_indikator.stat = 'Aktif'
                     GROUP BY m_indikator.id , m_unit.id) AS avg_unit
                 ON m_unit.id = avg_unit.unit_id
                 WHERE m_unit.stat = 'Aktif'
@@ -107,9 +125,15 @@ class Main_qry extends CI_Model {
 
     public function get_mutu_per_unit() {
         $unit_id = $this->input->get('unit_id');
-        $month = date('m');
-        $year = date('Y');
-        $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $periode = $this->input->get('periode');
+        $days = 0;
+        if($periode){
+            $mY = explode("-", $periode);
+            $month = $mY[0];
+            $year = $mY[1];
+            $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        }
+        
         $tgl_tran = date('Y-m');
         $header = array(
             'No.',
@@ -146,8 +170,9 @@ class Main_qry extends CI_Model {
                 FROM m_unit
                 LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
                 LEFT JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
-                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%Y-%m') = '{$tgl_tran}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%m-%Y') = '{$periode}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
                 WHERE m_unit.id = '{$unit_id}'
+                    AND m_indikator.stat = 'Aktif'
                 GROUP BY m_indikator.id,
                     m_indikator.nama,
                     m_jenis.nama,
@@ -186,9 +211,20 @@ class Main_qry extends CI_Model {
 
     public function get_mutu_indikator() {
         $unit_id = $this->input->get('unit_id');
-        $tgl_tran = date('Y-m');
+        $periode = $this->input->get('periode');
+        $days = 0;
+        if($periode){
+            $mY = explode("-", $periode);
+            $month = $mY[0];
+            $year = $mY[1];
+            $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        }
+        
         $columns = "";
-        $indikator = $this->db->get_where("m_indikator", array("unit_id" => $unit_id))->result_array();
+        $indikator = $this->db->get_where("m_indikator", array(
+            "unit_id" => $unit_id,
+            "stat" => 'Aktif',
+                ))->result_array();
         $data_indikator = array();
         if($indikator){
             foreach ($indikator as $value) {
@@ -208,18 +244,24 @@ class Main_qry extends CI_Model {
                 FROM m_unit
                 LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
                 LEFT JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
-                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%Y-%m') = '{$tgl_tran}' )trn_indikator ON m_indikator.id = trn_indikator.indikator_id
-                WHERE m_unit.id = '{$unit_id}'
+                LEFT JOIN ( SELECT * FROM trn_indikator WHERE date_format(tgl_tran,'%m-%Y') = '{$periode}')trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                WHERE m_unit.id = '{$unit_id}' AND m_indikator.stat = 'Aktif' 
+                    AND trn_indikator.tgl_tran IS NOT NULL
                 GROUP BY trn_indikator.tgl_tran";
         $qry = $this->db->query($str);
         if ($qry->num_rows() > 0) {
             $res = array(
                 'data' => $qry->result_array(),
                 'data_indkator' => $data_indikator,
+                'jml_hari' => $days,
             );
-            return $res;
         }else{
-            return false;
+            $res = array(
+                'data' => null,
+                'data_indkator' => $data_indikator,
+                'jml_hari' => $days,
+            );
         }
+        return $res;
     }
 }

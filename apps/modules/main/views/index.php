@@ -4,6 +4,16 @@
 
 <!-- Widgets -->
 <div class="row clearfix">
+    <div class="col-xs-3">
+        <?= form_label($form['periode']['placeholder'], '', array('class' => '',)); ?>
+        <div class="input-group">
+            <div class="form-line">
+                <?= form_input($form['periode']); ?>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row clearfix">
     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
         <div class="info-box bg-pink hover-expand-effect">
             <div class="icon">
@@ -11,7 +21,7 @@
             </div>
             <div class="content">
                 <div class="text">JUMLAH UNIT PELAYANAN</div>
-                <div class="number" ><?= $wiget_top['jml_unit']; ?></div>
+                <div class="number jml_unit" ><?= $wiget_top['jml_unit']; ?></div>
             </div>
         </div>
     </div>
@@ -22,7 +32,7 @@
             </div>
             <div class="content">
                 <div class="text">JUMLAH INDIKATOR MUTU</div>
-                <div class="number"><?= $wiget_top['jml_indikator']; ?></div>
+                <div class="number jml_indikator"><?= $wiget_top['jml_indikator']; ?></div>
             </div>
         </div>
     </div>
@@ -33,7 +43,7 @@
             </div>
             <div class="content">
                 <div class="text">RATA-RATA PENILAIAN MUTU SEMUA UNIT</div>
-                <div class="number" ><?= $wiget_top['avg_all_unit']; ?></div>
+                <div class="number avg_all_unit" ><?= $wiget_top['avg_all_unit']; ?></div>
             </div>
         </div>
     </div>
@@ -44,7 +54,7 @@
             </div>
             <div class="content">
                 <div class="text">PERIODE AKTIF</div>
-                <div class="number" ><?= $wiget_top['periode_nilai']; ?></div>
+                <div class="number periode_nilai" ><?= $wiget_top['periode_nilai']; ?></div>
             </div>
         </div>
     </div>
@@ -120,7 +130,7 @@
             {"data": "nama",
                 render: function (data, type, row) {
                     var btn = '<a title="Lapoan Penilaian Mutu Pada Unit '+data+'"' +
-                            ' href="<?=site_url('main/mutu_unit');?>/'+row.id+'">' +
+                            ' href="<?=site_url('main/mutu_unit');?>/'+row.id+'/'+row.periode+'">' +
                             data +
                             '</a>';
                     return btn;
@@ -161,19 +171,57 @@
         get_data_table();
         get_unit_mutu_avg_desc();
         get_unit_mutu_avg_asc();
+        get_widget_top();
         function get_data_table() {
             glob_where_datatable = [
                 {"name": "unit_id", "value": $("#unit_id").val()}
+                ,{"name": "periode", "value": $("#periode").val()}
+                
             ];
             table.ajax.reload();
         }
+        $('#periode').on("changeDate", function (e) {
+            get_unit_mutu_avg_desc();
+            get_unit_mutu_avg_asc();
+            get_data_table();
+            get_widget_top();
+        });
     });
 
+    function get_widget_top() {
+        var periode = $("#periode").val();
+        $.ajax({
+            type: "GET",
+            url: "<?= site_url('main/get_widget_top'); ?>",
+            data: {"periode": periode
+            },
+            beforeSend: function () {
+                
+            },
+            success: function (resp) {
+                if (resp) {
+                    var obj = jQuery.parseJSON(resp);
+                    $(".jml_unit").html(obj.jml_unit);
+                    $(".jml_indikator").html(obj.jml_indikator);
+                    $(".avg_all_unit").html(obj.avg_all_unit);
+                    $(".periode_nilai").html(obj.periode_nilai);
+                }
+            },
+            error: function (event, textStatus, errorThrown) {
+                console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
+            }
+        });
+    }
+
     function get_unit_mutu_avg_desc() {
+        var periode = $("#periode").val();
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_unit_mutu_avg'); ?>",
-            data: {"order": 'desc'},
+            data: {
+                "order": 'desc'
+                ,"periode": periode
+            },
             beforeSend: function () {
                 
             },
@@ -249,10 +297,13 @@
     }
 
     function get_unit_mutu_avg_asc() {
+        var periode = $("#periode").val();
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_unit_mutu_avg'); ?>",
-            data: {"order": 'asc'},
+            data: {"order": 'asc'
+                ,"periode": periode
+            },
             beforeSend: function () {
                 
             },

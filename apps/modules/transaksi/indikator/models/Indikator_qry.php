@@ -50,16 +50,17 @@ class Indikator_qry extends CI_Model {
 
     public function get_chart_nilai_unit() {
         $indikator_id = $this->input->get('indikator_id');
-        $month = date('m');
-        $year = date('Y');
+        $periode = $this->input->get('periode');
+        $mY = explode("-", $periode);
+        $month = $mY[0];
+        $year = $mY[1];
         $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-        $tgl_tran = date('Y-m');
         $str = "SELECT date_format(trn_indikator.tgl_tran,'%d') AS hari,
                     trn_indikator.num,
                     trn_indikator.denum,
                     ROUND((trn_indikator.num / trn_indikator.denum), 2) AS hasil
                 FROM trn_indikator
-                WHERE date_format(trn_indikator.tgl_tran,'%Y-%m') = '{$tgl_tran}'
+                WHERE date_format(trn_indikator.tgl_tran,'%m-%Y') = '{$periode}'
                 AND trn_indikator.indikator_id = '{$indikator_id}'
                 ORDER BY tgl_tran ASC";
         $qry = $this->db->query($str);
@@ -127,6 +128,9 @@ class Indikator_qry extends CI_Model {
     public function submit() {
         try {
             $array = $this->input->post();
+            if(!isset($array['stat'])){
+                $array['stat'] = 'Tidak';
+            }
             if (empty($array['id'])) {
                 unset($array['id']);
                 $array['urut'] = $this->get_urut($array['unit_id'], $array['jenis_id']);
@@ -141,7 +145,7 @@ class Indikator_qry extends CI_Model {
                     $this->msg = "Data Berhasil Disimpan";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && empty($array['stat'])) {
+            } elseif (!empty($array['id']) && empty($array['state'])) {
                 $this->db->where('id', $array['id']);
                 $resl = $this->db->update('m_indikator', $array);
                 if (!$resl) {
@@ -154,7 +158,7 @@ class Indikator_qry extends CI_Model {
                     $this->msg = "Data Berhasil Diupdate";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && ($array['stat'] == "delete")) {
+            } elseif (!empty($array['id']) && ($array['state'] == "delete")) {
                 $this->db->where('id', $array['id']);
                 $resl = $this->db->delete('m_indikator');
                 if (!$resl) {
@@ -167,7 +171,7 @@ class Indikator_qry extends CI_Model {
                     $this->msg = "Data Berhasil Dihapus";
                     $this->state = "1";
                 }
-            } elseif (!empty($array['id']) && ($array['stat'] == "deleteall")) {
+            } elseif (!empty($array['id']) && ($array['state'] == "deleteall")) {
                 $this->db->trans_begin();
                 foreach ($array['id'] as $value) {
                     $this->db->where('id', $value);
@@ -204,34 +208,62 @@ class Indikator_qry extends CI_Model {
     public function submit_trn_indikator() {
         try {
             $array = $this->input->post();
-            if (!empty($array['indikator_id'])) {
+            if (!empty($array['indikator_id']) && !isset($array['state'])) {
                 $is_exist = $this->db->get_where('trn_indikator', array(
                     'indikator_id' => $array['indikator_id'],
-                    'tgl_tran' => date('Y-m-d'),
+                    'tgl_tran' => $this->apps->dateconvert($array['tgl_tran']),
                 ))->num_rows();
                 if($is_exist){
-                    $array['user_id'] = $this->session->userdata('userid');
-                    $array['tgl_edit'] = date('Y-m-d H:i:s');
+                    $this->db->set('num', $array['num']);
+                    $this->db->set('denum', $array['denum']);
+                    $this->db->set('keterangan', $array['keterangan']);
+                    $this->db->set('user_id', $this->session->userdata('userid'));
+                    $this->db->set('tgl_edit', date('Y-m-d H:i:s'));
                     $this->db->where('indikator_id', $array['indikator_id']);
-                    $this->db->where('tgl_tran', date('Y-m-d'));
-                    $resl = $this->db->update('trn_indikator', $array);
+                    $this->db->where('tgl_tran', $this->apps->dateconvert($array['tgl_tran']));
+                    $resl = $this->db->update('trn_indikator');
+                    if (!$resl) {
+                        $err = $this->db->error();
+                        $this->title = "Kesalahan";
+                        $this->msg = " Kesalahan : " . $this->apps->err_code($err['message']);
+                        $this->state = "0";
+                    } else {
+                        $this->title = "Berhasil";
+                        $this->msg = "Data Berhasil Diupdate";
+                        $this->state = "1";
+                    }
                 }else{
                     $array['user_id'] = $this->session->userdata('userid');
                     $array['tgl_add'] = date('Y-m-d H:i:s');
-                    $array['tgl_tran'] = date('Y-m-d');
+                    $array['tgl_tran'] = $this->apps->dateconvert($array['tgl_tran']);
                     $resl = $this->db->insert('trn_indikator', $array);
+                    if (!$resl) {
+                        $err = $this->db->error();
+                        $this->title = "Kesalahan";
+                        $this->msg = " Kesalahan : " . $this->apps->err_code($err['message']);
+                        $this->state = "0";
+                    } else {
+                        $this->title = "Berhasil";
+                        $this->msg = "Data Berhasil Disimpan";
+                        $this->state = "1";
+                    }
                 }
-                if (!$resl) {
-                    $err = $this->db->error();
-                    $this->title = "Kesalahan";
-                    $this->msg = " Kesalahan : " . $this->apps->err_code($err['message']);
-                    $this->state = "0";
-                } else {
-                    $this->title = "Berhasil";
-                    $this->msg = "Data Berhasil Disimpan";
-                    $this->state = "1";
-                }
-            } 
+            }
+            else if (!empty($array['indikator_id']) && isset($array['state']) && ($array['state']=="delete")) {
+                    $this->db->where('indikator_id', $array['indikator_id']);
+                    $this->db->where('tgl_tran', $this->apps->dateconvert($array['tgl_tran']));
+                    $resl = $this->db->delete('trn_indikator');
+                    if (!$resl) {
+                        $err = $this->db->error();
+                        $this->title = "Kesalahan";
+                        $this->msg = " Kesalahan : " . $this->apps->err_code($err['message']);
+                        $this->state = "0";
+                    } else {
+                        $this->title = "Berhasil";
+                        $this->msg = "Data Berhasil Dihapus";
+                        $this->state = "1";
+                    }
+            }
             else {
                 $this->title = "Kesalahan";
                 $this->msg = "Variabel Tidak Sesuai";

@@ -243,7 +243,7 @@
                     type: "POST",
                     url: "<?php echo $submit; ?>",
                     data: {"id": id
-                        , "stat": "delete"
+                        , "state": "delete"
                         , "<?= $this->security->get_csrf_token_name(); ?>": $('meta[name=csrf]').attr("content")
                     },
                     success: function (resp) {

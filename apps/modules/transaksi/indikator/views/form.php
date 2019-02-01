@@ -174,15 +174,24 @@ echo form_input($form['id']);
         </div>
         <?=form_error('standar', '<div class="note">', '</div>');?>
     </div>
-</div>
-
-<div class="modal-footer">
-    <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" aria-label="Close">
-        Batal
-    </button>
-    <button type="submit" class="btn btn-primary btn-sm">
-        Simpan
-    </button>
+    <div class="col-sm-6">
+        <div class="input-group">
+            <?= form_checkbox($form['stat']);?>
+            <label for="<?=$form['stat']['id'];?>">
+                <?=$form['stat']['placeholder'];?>
+            </label>
+        </div>
+        <?=form_error('stat', '<div class="note">', '</div>');?>
+    </div>
+    
+    <div class="col-sm-6 text-right">
+        <button type="button" class="btn btn-default btn-sm" data-dismiss="modal" aria-label="Close">
+            Batal
+        </button>
+        <button type="submit" class="btn btn-primary btn-sm">
+            Simpan
+        </button>    
+    </div>
 </div>
 <?php echo form_close(); ?>
 

@@ -78,13 +78,14 @@ class Indikator extends MY_Controller {
 
     public function json_dgview() {
         $unit_id = $this->input->post('unit_id');
-        $columns = array('id', 'urut', 'nm_jenis', 'nama', 'standar', 'id',);
+        $columns = array('id', 'urut', 'nm_jenis', 'nama', 'standar','stat', 'id',);
         $table = " (SELECT 
                     m_indikator.id,
                     m_jenis.nama AS nm_jenis,
                     m_indikator.urut,
                     m_indikator.nama,
-                    m_indikator.standar
+                    m_indikator.standar,
+                    m_indikator.stat
                     FROM m_indikator
                     JOIN m_jenis ON m_jenis.id = m_indikator.jenis_id
                     WHERE m_indikator.unit_id = '{$unit_id}'
@@ -96,7 +97,7 @@ class Indikator extends MY_Controller {
 
     public function submit() {
         $id = $this->input->post('id');
-        $stat = $this->input->post('stat');
+        $stat = $this->input->post('state');
 
         if ($this->validate($id, $stat) == TRUE) {
             $res = $this->indikator_qry->submit();
@@ -250,6 +251,14 @@ class Indikator extends MY_Controller {
                 'class' => 'form-control ',
                 'required' => '',
             ),
+            'stat' => array(
+                'placeholder' => 'Status Aktif Indikator',
+                'id' => 'stat',
+                'name' => 'stat',
+                'value' => "Aktif",
+                'class' => 'filled-in ',
+                'checked' => TRUE,
+            ),
         );
     }
 
@@ -396,6 +405,14 @@ class Indikator extends MY_Controller {
                 'class' => 'form-control ',
                 'required' => '',
             ),
+            'stat' => array(
+                'placeholder' => 'Status Aktif Indikator',
+                'id' => 'stat',
+                'name' => 'stat',
+                'value' => "Aktif",
+                'class' => 'filled-in ',
+                'checked' => ($this->val[0]['stat']=="Aktif") ? TRUE : FALSE,
+            ),
         );
     }
 
@@ -454,7 +471,7 @@ class Indikator extends MY_Controller {
             array(
                 'field' => 'sumber_data',
                 'label' => 'Sumber Data',
-                'rules' => 'required|integer',
+                'rules' => 'required',
             ),
         );
 
@@ -483,7 +500,9 @@ class Indikator extends MY_Controller {
     }
 
     public function submit_trn_indikator() {
-        if ($this->validate_trn_indikator() == TRUE) {
+        $indikator_id = $this->input->post('indikator_id');
+        $state = $this->input->post('state');
+        if ($this->validate_trn_indikator($indikator_id, $state) == TRUE) {
             $res = $this->indikator_qry->submit_trn_indikator();
             echo $res;
         } else {
@@ -503,7 +522,7 @@ class Indikator extends MY_Controller {
     
     public function json_dgview_trn_indikator() {
         $indikator_id = $this->input->post('indikator_id');
-        $columns = array('tgl_tran', 'keterangan', 'num', 'denum', 'hasil', 'tgl_last',);
+        $columns = array('tgl_tran', 'keterangan', 'num', 'denum', 'hasil', 'tgl_last','indikator_id','tgl_id');
         $table = " (SELECT indikator_id,
                             tgl_tran,
                             keterangan,
@@ -514,7 +533,8 @@ class Indikator extends MY_Controller {
                             tgl_add,
                             tgl_edit,
                             CASE WHEN tgl_edit IS NULL THEN tgl_add
-                            ELSE tgl_edit END AS tgl_last
+                            ELSE tgl_edit END AS tgl_last,
+                            date_format(tgl_tran,'%d-%m-%Y') AS tgl_id
                          FROM trn_indikator
                          WHERE indikator_id = '{$indikator_id}') AS trn_indikator ";
         $index = "tgl_tran";
@@ -522,12 +542,20 @@ class Indikator extends MY_Controller {
         echo $output;
     }
 
-    private function validate_trn_indikator() {
+    private function validate_trn_indikator($indikator_id, $state) {
+        if (!empty($indikator_id) && !empty($state)) {
+            return true;
+        }
         $config = array(
             array(
                 'field' => 'indikator_id',
                 'label' => 'ID Indikator',
                 'rules' => 'required|integer',
+            ),
+            array(
+                'field' => 'tgl_tran',
+                'label' => 'Tanggal Penilaian',
+                'rules' => 'required|exact_length[10]',
             ),
             array(
                 'field' => 'keterangan',
@@ -563,6 +591,22 @@ class Indikator extends MY_Controller {
                 'name' => 'indikator_id',
                 'value' => $indikator_id,
                 'class' => 'form-control ',
+            ),
+            'periode' => array(
+                'type' => 'text',
+                'placeholder' => 'Periode Penilaian',
+                'id' => 'periode',
+                'name' => 'periode',
+                'value' => date('m-Y'),
+                'class' => 'form-control month',
+            ),
+            'tgl_tran' => array(
+                'type' => 'text',
+                'placeholder' => 'Tanggal Penilaian',
+                'id' => 'tgl_tran',
+                'name' => 'tgl_tran',
+                'value' => date('d-m-Y'),
+                'class' => 'form-control calendar',
             ),
             'keterangan' => array(
                 'placeholder' => 'Keterangan',

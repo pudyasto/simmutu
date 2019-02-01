@@ -93,6 +93,7 @@
                                 <th style="width: 200px;text-align: center;">Jenis Indikator</th>
                                 <th style="text-align: center;">Indikator</th>
                                 <th style="width: 250px;text-align: center;">Standar</th>
+                                <th style="width: 50px;text-align: center;">Status</th>
                                 <th style="min-width: 80px;width: 80px;text-align: center;">
                                     <i class="fa fa-th"></i>
                                 </th>
@@ -105,6 +106,7 @@
                                 <th>Jenis Indikator</th>
                                 <th>Indikator</th>
                                 <th>Standar</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </tfoot>
@@ -225,6 +227,9 @@
             {"data": "standar",
                 render: $.fn.dataTable.render.text()
             },
+            {"data": "stat",
+                render: $.fn.dataTable.render.text()
+            },
             {"data": "id",
                 render: function (data, type, row) {
                     var btn = '<center>' +
@@ -260,11 +265,11 @@
             },
             {
                 "orderable": false,
-                "targets": 3
+                "targets": 4
             }
         ];
         var orders = [[2, "desc"], [1, "asc"]];
-        set_datatable('dataTable', "<?= site_url('indikator/json_dgview'); ?>", column_list, column_def, null, orders, 2, 6, [[-1], ['All']], null, false);
+        set_datatable('dataTable', "<?= site_url('indikator/json_dgview'); ?>", column_list, column_def, null, orders, 2, 7, [[-1], ['All']], null, false);
         get_data_table();
         function get_data_table() {
             glob_where_datatable = [
@@ -311,7 +316,7 @@
                     type: "POST",
                     url: "<?php echo $submit; ?>",
                     data: {"id": id
-                        , "stat": "delete"
+                        , "state": "delete"
                         , "<?= $this->security->get_csrf_token_name(); ?>": $('meta[name=csrf]').attr("content")
                     },
                     success: function (resp) {

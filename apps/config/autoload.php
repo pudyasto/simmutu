@@ -101,7 +101,7 @@ $autoload['drivers'] = array();
 $autoload['helper'] = array('url', 'form', 'linktitle', 'skipclass', 'month', 
     'terbilang', 'month_before', 'strmonth', 'json_brackets','jual_bersih',
     'label_barcode', 'hitung_umur','date_id','kode_psn','datetime_id', 'abjad',
-    'daydatetime_id');
+    'daydatetime_id','month_id');
 
 
 /*

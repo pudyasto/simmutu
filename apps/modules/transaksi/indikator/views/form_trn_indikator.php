@@ -28,8 +28,8 @@
                     <tr>
                         <td style="width: 135px;"> Jenis Indikator</td>
                         <td>: <?= $detail->nm_jenis; ?></td>
-                        <td style="width: 135px;">Tanggal Penilaian</td>
-                        <td style="width: 220px;">: <?= datetime_id(date('Y-m-d H:i:s')); ?></td>
+                        <td style="width: 150px;">Penanggung Jawab</td>
+                        <td style="width: 220px;">: <?= $detail->nama_pj; ?></td>
                     </tr>
                     <tr>
                         <td>Indikator</td>
@@ -40,6 +40,15 @@
                         <td colspan="3">: <?= $detail->standar; ?></td>
                     </tr>
                 </table>
+            </div>
+            <div class="col-sm-12">
+                <?= form_label($form['tgl_tran']['placeholder'], '', array('class' => '',)); ?>
+                <div class="input-group">
+                    <div class="form-line">
+                        <?= form_input($form['tgl_tran']); ?>
+                    </div>
+                </div>
+                <?= form_error('tgl_tran', '<div class="note">', '</div>'); ?>
             </div>
             <div class="col-sm-12">
                 <?= form_label($form['keterangan']['placeholder'], '', array('class' => '',)); ?>
@@ -80,6 +89,19 @@
     </div>
     <?php echo form_close(); ?>
     <div class="col-md-7">
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-4">
+                    <?= form_label($form['periode']['placeholder'], '', array('class' => '',)); ?>
+                    <div class="input-group">
+                        <div class="form-line">
+                            <?= form_input($form['periode']); ?>
+                        </div>
+                    </div>
+                    <?= form_error('periode', '<div class="note">', '</div>'); ?>
+                </div>
+            </div>
+        </div>
         <div class="table-responsive">
             <table class="table table-hover table-bordered tableTrnIndikator" style="width: 100%;">
                 <thead>
@@ -89,6 +111,7 @@
                         <th style="width: 80px;text-align: center;">Numerator</th>
                         <th style="width: 80px;text-align: center;">Denumerator</th>
                         <th style="width: 80px;text-align: center;">Hasil</th>
+                        <th style="width: 80px;text-align: center;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -133,6 +156,23 @@
                 render: function (data, type, row) {
                     return type === 'export' ? Number(data) * 100 : numeral(Number(data) * 100).format('0,0.00');
                 }
+            },
+            {"data": "tgl_tran",
+                render: function (data, type, row) {
+                    var btn = '<center>' +
+                            '<a class="btn bg-cyan btn-xs waves-effect"' +
+                            ' onclick="edit_nilai(\'' + row.tgl_id + '\',\'' + row.keterangan + '\',\'' + row.num + '\',\'' + row.denum + '\');"' +
+                            ' href="javascript:void(0);">' +
+                            '<i class="material-icons">mode_edit</i>' +
+                            '</a>' +
+                            '<a class="btn bg-red btn-xs waves-effect"' +
+                            ' onclick="delete_nilai(\'' + row.tgl_id + '\');"' +
+                            ' href="javascript:void(0);">' +
+                            '<i class="material-icons">delete</i>' +
+                            '</a>' +
+                            '</center>';
+                    return btn;
+                }
             }
         ];
         var column_def_trn_indikator  = [
@@ -154,6 +194,8 @@
                     , "value": $('meta[name=csrf]').attr("content")});
                 aoData.push({"name": 'indikator_id'
                     , "value": $('#indikator_id').val()});
+                aoData.push({"name": 'periode'
+                    , "value": $('#periode').val()});
             },
             "fnServerData": function (sSource, aoData, fnCallback) {
                 $.ajax({
@@ -220,6 +262,11 @@
         $(".btn-refresh").click(function(){
             table_trn_indikator.ajax.reload();
         });
+
+        $('#periode').on("changeDate", function (e) {
+            table_trn_indikator.ajax.reload();
+            get_chart_nilai_unit();
+        });
         
         $("#form_add").on("submit", function (event) {
             event.preventDefault();
@@ -240,6 +287,8 @@
                         }).then((result) => {
                             if (result.value) {
                                 table_trn_indikator.ajax.reload();
+                                get_chart_nilai_unit();
+                                $("#tgl_tran").val('');
                                 $("#keterangan").val('');
                                 $("#num").val('');
                                 $("#denum").val('');
@@ -276,14 +325,16 @@
     
     function get_chart_nilai_unit() {
         var indikator_id = $('#indikator_id').val();
+        var periode = $('#periode').val();
         $.ajax({
             type: "GET",
             url: "<?= site_url('indikator/get_chart_nilai_unit'); ?>",
-            data: {"indikator_id": indikator_id},
+            data: {
+                "indikator_id": indikator_id
+                ,"periode": periode
+            },
             beforeSend: function () {
-                if (typeof chart_penilaian_unit != 'undefined') {
-                    chart_penilaian_unit.destroy();
-                }
+                
             },
             success: function (resp) {
                 if (resp) {
@@ -388,6 +439,67 @@
             },
             error: function (event, textStatus, errorThrown) {
                 console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
+            }
+        });
+    }
+    
+    function edit_nilai(tgl_tran,keterangan,num,denum){
+        $("#tgl_tran").val(tgl_tran);
+        $("#keterangan").val(keterangan);
+        $("#num").val(num);
+        $("#denum").val(denum);
+    }
+    
+    function delete_nilai(tgl_tran){
+        var indikator_id = $('#indikator_id').val();
+        swal({
+            title: "Konfirmasi Hapus",
+            text: "Data yang dihapus, tidak dapat dikembalikan!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#c9302c",
+            confirmButtonText: "Ya, Lanjutkan",
+            cancelButtonText: "Tidak, Batalkan"
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    type: "POST",
+                    url: "<?=site_url('indikator/submit_trn_indikator'); ?>",
+                    data: {"indikator_id": indikator_id
+                        , "tgl_tran": tgl_tran
+                        , "state": "delete"
+                        , "<?= $this->security->get_csrf_token_name(); ?>": $('meta[name=csrf]').attr("content")
+                    },
+                    success: function (resp) {
+                        var obj = jQuery.parseJSON(resp);
+                        update_csrf(obj);
+                        if (obj.state === "1") {
+                            table_trn_indikator.ajax.reload();
+                            get_chart_nilai_unit();
+                        } else {
+                            swal({
+                                title: obj.title,
+                                html: obj.msg,
+                                type: "error"
+                            }).then((result) => {
+                                if (result.value) {
+
+                                }
+                            });
+                        }
+                    },
+                    error: function (event, textStatus, errorThrown) {
+                        swal({
+                            title: "Kesalahan!",
+                            html: 'Pesan: ' + textStatus + ' , HTTP: ' + errorThrown,
+                            type: "error"
+                        }).then((result) => {
+                            if (result.value) {
+                                //location.reload();
+                            }
+                        });
+                    }
+                });
             }
         });
     }

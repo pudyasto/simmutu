@@ -8,15 +8,26 @@
         <div class="card">
             <div class="header">
                 <h2>
-                    <a class="btn btn-success btn-circle waves-effect waves-circle waves-float" href="<?=site_url('main');?>">
+                    <a class="btn btn-success btn-circle waves-effect waves-circle waves-float" href="<?= site_url('main'); ?>">
                         <i class="material-icons">arrow_back</i></a> 
-                        PENILAIAN MUTU UNIT : <?=(isset($unit['nama'])) ? strtoupper($unit['nama']) : "";?>
+                    PENILAIAN MUTU UNIT : <?= (isset($unit['nama'])) ? strtoupper($unit['nama']) : ""; ?>
                 </h2>
             </div>
             <div class="body">
-                <div style="height: 500px; display: none;">
+                <div class="row clearfix">
+                    <div class="col-xs-3">
+                        <?= form_label($form['periode']['placeholder'], '', array('class' => '',)); ?>
+                        <div class="input-group">
+                            <div class="form-line">
+                                <?= form_input($form['periode']); ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div style="height: 500px; ">
                     <canvas id="bar-mutu-indikator"></canvas>
                 </div>
+                <hr>
                 <div class="table-responsive table-mutu-per-unit">
                 </div>
             </div>
@@ -31,14 +42,23 @@
     $(document).ready(function () {
         get_mutu_per_unit();
         get_mutu_indikator();
+        $('#periode').on("changeDate", function (e) {
+            var unit_id = "<?=$this->uri->segment(3);?>";
+            var periode = $(this).val();
+            location.replace(base_url('main/mutu_unit/'+unit_id+'/'+periode));
+        });
     });
 
     function get_mutu_per_unit() {
-        var unit_id = "<?=$this->uri->segment(3);?>";
+        var unit_id = "<?= $this->uri->segment(3); ?>";
+        var periode = "<?= $this->uri->segment(4); ?>";
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_mutu_per_unit'); ?>",
-            data: {"unit_id": unit_id},
+            data: {
+                "unit_id": unit_id
+                , "periode": periode
+            },
             beforeSend: function () {
                 $(".table-mutu-per-unit").html('');
             },
@@ -46,25 +66,25 @@
                 if (resp) {
                     $(".table-mutu-per-unit").html(resp);
                     $(".table-nilai-indikator").DataTable({
-                        "columnDefs": [ {
-                            "targets": 1,
-                            "visible": false
-                          }, {
-                            "targets": 2,
-                            "render": function ( data, type, row, meta ) {
-                                var btn = '<a class=""' +
-                                        ' data-toggle="modal"' +
-                                        ' data-title="Pengisian Numerator - Denumerator"' +
-                                        ' data-post-id="' + row[1] + '"' +
-                                        ' data-width="90%"' +
-                                        ' data-action-url="indikator/form_trn_indikator"' +
-                                        ' data-target="#form-modal"' +
-                                        ' href="javascript:void(0);">' +
-                                        data +
-                                        '</a>';
-                                return btn;
-                            }
-                          } ],
+                        "columnDefs": [{
+                                "targets": 1,
+                                "visible": false
+                            }, {
+                                "targets": 2,
+                                "render": function (data, type, row, meta) {
+                                    var btn = '<a class=""' +
+                                            ' data-toggle="modal"' +
+                                            ' data-title="Pengisian Numerator - Denumerator"' +
+                                            ' data-post-id="' + row[1] + '"' +
+                                            ' data-width="90%"' +
+                                            ' data-action-url="indikator/form_trn_indikator"' +
+                                            ' data-target="#form-modal"' +
+                                            ' href="javascript:void(0);">' +
+                                            data +
+                                            '</a>';
+                                    return btn;
+                                }
+                            }],
                         "paging": false,
                         buttons: [
                             {
@@ -87,26 +107,30 @@
             }
         });
     }
-    
+
     function get_mutu_indikator() {
-        var unit_id = "<?=$this->uri->segment(3);?>";
+        var unit_id = "<?= $this->uri->segment(3); ?>";
+        var periode = "<?= $this->uri->segment(4); ?>";
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_mutu_indikator'); ?>",
-            data: {"unit_id": unit_id},
+            data: {
+                "unit_id": unit_id
+                , "periode": periode
+            },
             beforeSend: function () {
 
             },
             success: function (resp) {
                 var obj = jQuery.parseJSON(resp);
                 update_csrf(obj);
-                if (obj.data) {
+                if (obj.jml_hari) {
                     var PLabel = [];
                     var JsonData = [];
                     var color_num = 0;
-                    $.each(obj.data, function (key, data) {
-                        PLabel.push(data.tgl_tran);
-                    });
+                    for (i = 1; i <= Number(obj.jml_hari); i++) {
+                        PLabel.push(i);
+                    }
                     $.each(obj.data_indkator, function (k_lokasi, v_lokasi) {
                         var PDataJual = [];
                         $.each(obj.data, function (key, data) {
@@ -117,7 +141,7 @@
                             });
                         });
                         var xchart = {
-                            type: 'bar',
+                            type: 'line',
                             data: PDataJual,
                             borderColor: window.chartArrayColors[color_num],
                             backgroundColor: window.chartArrayColors[color_num],
@@ -153,7 +177,7 @@
                         legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>',
                         legend: {
                             display: true,
-                            position: 'bottom',
+                            position: 'right',
                             fontSize: 9,
                             boxWidth: 20
                         },
@@ -172,8 +196,14 @@
                         },
                         tooltips: {
                             callbacks: {
+                                title: function (tooltipItem, data) {
+                                    return "Tanggal : " + tooltipItem[0].xLabel;
+                                },
                                 label: function (tooltipItem, data) {
-                                    return numeral(tooltipItem.yLabel).format('0,0')+"%";
+                                    return numeral(tooltipItem.yLabel).format('0,0') + "%";
+                                },
+                                footer: function (tooltipItem, data) {
+                                    return data.datasets[tooltipItem[0].datasetIndex].label;
                                 },
                             },
                             titleFontSize: 16,
@@ -184,7 +214,7 @@
                         },
                         title: {
                             display: true,
-                            text: 'Grafik Penjualan Semua Lokasi'
+                            text: 'Grafik Penilaian Per Indikator'
                         },
                         chartArea: {
                             backgroundColor: 'rgba(255, 255, 255, 1)'
@@ -195,7 +225,6 @@
                         type: 'bar',
                         data: {
                             datasets: JsonData,
-
                             labels: PLabel
                         },
                         options: chartOpt

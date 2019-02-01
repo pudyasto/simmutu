@@ -61,7 +61,7 @@ class M_unit extends MY_Controller {
 
     public function submit() {
         $id = $this->input->post('id');
-        $stat = $this->input->post('stat');
+        $stat = $this->input->post('state');
 
         if ($this->validate($id, $stat) == TRUE) {
             $res = $this->m_unit_qry->submit();

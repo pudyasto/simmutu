@@ -111,13 +111,11 @@ $("input:text").focus(function() { $(this).select(); } );
 
 $('#form-modal').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget);
-//    console.log(button);
     var title = button.data('title');
     var action_url = button.data('action-url');
     var post_id = button.data('post-id');
     var width = button.data('width');
     if (width) {
-//        console.log(width);
         $(".modal-dialog").css("min-width", width);
     }
     if (action_url !== undefined) {
