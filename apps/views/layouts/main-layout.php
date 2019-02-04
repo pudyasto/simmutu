@@ -322,9 +322,9 @@
                     <li role="presentation" class="active"><a href="#skins" data-toggle="tab">SKINS</a></li>
                 </ul>
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane fade in active in active" id="skins">
+                    <div role="tabpanel" class="tab-pane fade in active" id="skins">
                         <ul class="demo-choose-skin">
-                            <li data-theme="red" class="active">
+                            <li data-theme="red">
                                 <div class="red"></div>
                                 <span>Red</span>
                             </li>
@@ -459,6 +459,7 @@
 
         <!-- Custom Js -->
         <script src="<?= base_url('assets/adminbsb/js/admin.js'); ?>"></script>
+        <script src="<?= base_url('assets/adminbsb/js/demo.js?v='.rand(1,10)); ?>"></script>
         <script src="<?= base_url('assets/custom/js/my.js'); ?>" type="text/javascript"></script>
         <script src="<?= base_url('assets/custom/js/main.js'); ?>" type="text/javascript"></script>
     </body>

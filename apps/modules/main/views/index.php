@@ -17,11 +17,11 @@
     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
         <div class="info-box bg-pink hover-expand-effect">
             <div class="icon">
-                <i class="material-icons">local_offer</i>
+                <i class="material-icons">local_hospital</i>
             </div>
             <div class="content">
                 <div class="text">JUMLAH UNIT PELAYANAN</div>
-                <div class="number jml_unit" ><?= $wiget_top['jml_unit']; ?></div>
+                <div class="h4 jml_unit" ><?= $wiget_top['jml_unit']; ?></div>
             </div>
         </div>
     </div>
@@ -32,29 +32,29 @@
             </div>
             <div class="content">
                 <div class="text">JUMLAH INDIKATOR MUTU</div>
-                <div class="number jml_indikator"><?= $wiget_top['jml_indikator']; ?></div>
+                <div class="h4 jml_indikator"><?= $wiget_top['jml_indikator']; ?></div>
             </div>
         </div>
     </div>
     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
         <div class="info-box bg-light-green hover-expand-effect">
             <div class="icon">
-                <i class="material-icons">forum</i>
+                <i class="material-icons">poll</i>
             </div>
             <div class="content">
-                <div class="text">RATA-RATA PENILAIAN MUTU SEMUA UNIT</div>
-                <div class="number avg_all_unit" ><?= $wiget_top['avg_all_unit']; ?></div>
+                <div class="text">NILAI MUTU SEMUA UNIT</div>
+                <div class="h4 avg_all_unit" ><?= $wiget_top['avg_all_unit']; ?></div>
             </div>
         </div>
     </div>
     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
         <div class="info-box bg-orange hover-expand-effect">
             <div class="icon">
-                <i class="material-icons">person_add</i>
+                <i class="material-icons">event_note</i>
             </div>
             <div class="content">
                 <div class="text">PERIODE AKTIF</div>
-                <div class="number periode_nilai" ><?= $wiget_top['periode_nilai']; ?></div>
+                <div class="h4 periode_nilai" ><?= $wiget_top['periode_nilai']; ?></div>
             </div>
         </div>
     </div>
@@ -69,7 +69,7 @@
             </div>
             <div class="body">
                 <div class="table-responsive">
-                    <table class="table table-hover dashboard-task-infos dataTable">
+                    <table style="width: 100%;" class="table table-hover dashboard-task-infos dataTable">
                         <thead>
                             <tr>
                                 <th style="width: 10px;">#</th>
