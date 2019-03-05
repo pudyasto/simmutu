@@ -73,6 +73,7 @@ class Main extends MY_Controller {
             $year = $mY[1];
             $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         }
+        // SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
         $columns = array('nourut', 'nama', 'hasil_all', 'hasil_all', 'id','periode');
         $table = " (SELECT 
                         @rank:=@rank+1 AS nourut,
@@ -87,7 +88,7 @@ class Main extends MY_Controller {
                         (SELECT 
                             m_indikator.id AS indikator_id,
                                 m_unit.id AS unit_id,
-                                SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
+                                AVG(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) AS hasil
                         FROM
                             m_unit
                         LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id

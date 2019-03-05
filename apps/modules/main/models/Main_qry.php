@@ -44,6 +44,7 @@ class Main_qry extends CI_Model {
         $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
         $jml_unit = $this->db->get_where("m_unit", array('stat' => 'Aktif'))->num_rows();
         $jml_indikator = $this->db->get_where("m_indikator", array('stat' => 'Aktif'))->num_rows();
+        //SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
         $str_all_unit = "SELECT 
                                 CAST((SUM(hasil_all) / COUNT(unit_id)) AS DECIMAL (18 , 2 )) AS hasil_avg
                             FROM
@@ -53,7 +54,7 @@ class Main_qry extends CI_Model {
                                     (SELECT 
                                     m_indikator.id AS indikator_id,
                                         m_unit.id AS unit_id,
-                                        SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
+                                        AVG(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) AS hasil
                                 FROM
                                     m_unit
                                 LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
@@ -93,6 +94,7 @@ class Main_qry extends CI_Model {
         if (!$order) {
             $order = "DESC";
         }
+        // SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
         $str = "SELECT 
                     m_unit.id,
                     m_unit.nama,
@@ -103,7 +105,7 @@ class Main_qry extends CI_Model {
                     (SELECT 
                         m_indikator.id AS indikator_id,
                             m_unit.id AS unit_id,
-                            SUM(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) / ".intval($days)." AS hasil
+                            AVG(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) AS hasil
                     FROM
                         m_unit
                     LEFT JOIN m_indikator ON m_unit.id = m_indikator.unit_id
@@ -147,13 +149,14 @@ class Main_qry extends CI_Model {
         for ($i = 1; $i <= $days; $i++) {
             $num_day = str_pad($i, 2, "0", STR_PAD_LEFT);
             $columns .= " , SUM(ROUND(CASE WHEN date_format(trn_indikator.tgl_tran,'%d') = '{$num_day}' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) AS h_" . $num_day;
-            $total .= " SUM(ROUND(CASE WHEN date_format(trn_indikator.tgl_tran,'%d') = '{$num_day}' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) +";
+            $total .= " AVG(ROUND(CASE WHEN date_format(trn_indikator.tgl_tran,'%d') = '{$num_day}' THEN (trn_indikator.num / trn_indikator.denum) * 100 ELSE 0 END)) +";
             $cell = array('data' => $num_day, 'style' => 'width: 10px');
             array_push($header, $cell);
         }
         if($total){
             $total = substr($total, 0, strlen($total) - 1);
-            $total = " , ROUND((" . $total . ") / " . $days . ") AS total";
+            //$total = " , ROUND((" . $total . ") / " . $days . ") AS total";
+            $total = " , ROUND((" . $total . ")) AS total";
             array_push($header, "Avg");
         }
         if (!$columns) {
