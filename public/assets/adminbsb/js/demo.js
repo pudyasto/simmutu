@@ -12,6 +12,9 @@ $(function () {
 });
 function skinLoader() {
     var saved_theme = localStorage.getItem("myTheme");
+    if(!saved_theme){
+        saved_theme = "red";
+    }
     var $body = $('body');
     $body.attr('class','');
     $body.addClass('theme-' + saved_theme);
