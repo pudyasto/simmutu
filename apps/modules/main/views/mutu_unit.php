@@ -24,7 +24,7 @@
                         </div>
                     </div>
                 </div>
-                <div style="height: 500px; ">
+                <div style="height: 500px; display: none;">
                     <canvas id="bar-mutu-indikator"></canvas>
                 </div>
                 <hr>

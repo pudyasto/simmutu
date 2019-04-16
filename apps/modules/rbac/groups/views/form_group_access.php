@@ -21,7 +21,7 @@
     <hr> 
 </div>
 <div class="table-responsive">
-    <table class="table table-bordered table-hover table-sm table-group-access">
+    <table class="table table-bordered table-hover table-sm table-group-access" style="width: 100%;">
         <thead>
             <tr>
                 <th style="min-width: 100px;width: 100px;text-align: center;">Set Akses</th>
