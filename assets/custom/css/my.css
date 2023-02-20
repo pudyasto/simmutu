@@ -53,3 +53,7 @@ td.details-control {
 tr.shown td.details-control {
     background: url('/assets/img/datatable/details_close.png') no-repeat center center;
 }
+
+.dropdown-menu{
+    overflow: visible !important;
+}
