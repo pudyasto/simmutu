@@ -72,17 +72,17 @@
                             }, {
                                 "targets": 2,
                                 "render": function (data, type, row, meta) {
-                                    var btn = '<a class=""' +
-                                            ' data-toggle="modal"' +
-                                            ' data-title="Pengisian Numerator - Denumerator"' +
-                                            ' data-post-id="' + row[1] + '"' +
-                                            ' data-width="90%"' +
-                                            ' data-action-url="indikator/form_trn_indikator"' +
-                                            ' data-target="#form-modal"' +
-                                            ' href="javascript:void(0);">' +
-                                            data +
-                                            '</a>';
-                                    return btn;
+                                    // var btn = '<a class=""' +
+                                    //         ' data-toggle="modal"' +
+                                    //         ' data-title="Pengisian Numerator - Denumerator"' +
+                                    //         ' data-post-id="' + row[1] + '"' +
+                                    //         ' data-width="90%"' +
+                                    //         ' data-action-url="indikator/form_trn_indikator"' +
+                                    //         ' data-target="#form-modal"' +
+                                    //         ' href="javascript:void(0);">' +
+                                    //         data +
+                                    //         '</a>';
+                                    return data;
                                 }
                             }],
                         "paging": false,
