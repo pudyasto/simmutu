@@ -98,7 +98,7 @@ switch (ENVIRONMENT)
  * This variable must contain the name of your "system" directory.
  * Set the path if it is not in the same directory as this file.
  */
-	$system_path = '../engine';
+	$system_path = 'engine';
 
 /*
  *---------------------------------------------------------------
@@ -115,7 +115,7 @@ switch (ENVIRONMENT)
  *
  * NO TRAILING SLASH!
  */
-	$application_folder = '../apps';
+	$application_folder = 'apps';
 
 /*
  *---------------------------------------------------------------

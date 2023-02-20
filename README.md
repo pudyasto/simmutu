@@ -28,11 +28,10 @@ ditentukan sebelumnya.
     - config/config.php
     - config/database.php
     - config/ion_auth.php
-* Gunakan VirtualHost dan arahkan ke folder public/
 * Jalankan Aplikasi
 
 * Masukkan User dan Password Berikut ini
-    - User : Administrator
+    - User : administrator
     - Pass : 3335
 
 ### Deskripsi komponen yang digunakan ###

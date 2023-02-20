@@ -8,15 +8,6 @@
  * Description : 
  * ***************************************************************
  */
-
-
-function base_url(param = ""){
-    var base_url = window.location.origin + "/" + param;
-    return base_url;
-}
-
-
-
 function toast(message,title,typemessage){
     if(!typemessage){
         typemessage = "info";

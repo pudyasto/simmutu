@@ -431,7 +431,12 @@
                 </div>
             </div>
         </div>
-
+        <script>
+            function base_url(param = ""){
+                var base_url = '<?=base_url();?>' + "/" + param;
+                return base_url;
+            }
+        </script>        
         <!-- Bootstrap Core Js -->
         <script src="<?= base_url('assets/adminbsb/plugins/bootstrap/js/bootstrap.js'); ?>"></script>
 

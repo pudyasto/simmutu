@@ -52,6 +52,13 @@
 
     <body class="login-page">
         <?php echo $template['body']; ?>
+
+        <script>
+            function base_url(param = ""){
+                var base_url = '<?=base_url();?>' + "/" + param;
+                return base_url;
+            }
+        </script>   
         <script src="<?= base_url('assets/custom/js/my.js'); ?>" type="text/javascript"></script>
         <script src="<?= base_url('assets/custom/js/login.js'); ?>" type="text/javascript"></script>
     </body>
