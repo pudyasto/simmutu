@@ -32,6 +32,7 @@ class Indikator extends MY_Controller {
             'reload' => site_url('indikator'),
         );
         $this->load->model('indikator_qry');
+
         $data_m_unit = $this->indikator_qry->get_m_unit();
         $this->data['unit_id'][''] = '-- Pilih Unit --';
         foreach ($data_m_unit as $value) {

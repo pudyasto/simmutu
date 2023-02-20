@@ -22,7 +22,9 @@ class Users extends MY_Controller {
     protected $data = '';
     protected $val = '';
     protected $opt_group_id = array();
+    protected $opt_unit_id = array();
     protected $opt_tokoid = array();
+
     public function __construct() {
         parent::__construct();
         $this->data = array(
@@ -33,10 +35,18 @@ class Users extends MY_Controller {
             'reload' => site_url('users'),
         );
         $this->load->model('users_qry');
+
         $group_id = $this->users_qry->ref_mstgroup();
         $this->opt_group_id[''] = '-- Pilih Group --';
         foreach ($group_id as $value) {
             $this->opt_group_id[$value['id']] = $value['name'];
+        }
+        
+        
+        $unit_id = $this->users_qry->ref_mstunit();
+        $this->opt_unit_id[''] = '-- Pilih Unit Pelayanan --';
+        foreach ($unit_id as $value) {
+            $this->opt_unit_id[$value['id']] = $value['nama'];
         }
     }
 
@@ -58,15 +68,18 @@ class Users extends MY_Controller {
     }
 
     public function json_dgview() {
-        $columns = array('id', 'full_name', 'email', 'groupname', 'active');
+        $columns = array('id', 'unitname','full_name', 'email', 'groupname', 'active');
         $table = "(SELECT
                         users.id,
                         users.email,
                         users.last_login,
                         CASE WHEN users.active = 1 THEN 'Aktif' ELSE 'Tidak' END AS active,
                         users.full_name,
-                        groups.name AS groupname
+                        groups.name AS groupname,
+                        m_unit.nama as unitname
                     FROM users
+                        LEFT JOIN m_unit
+                            ON m_unit.id = users.unit_id
                         LEFT JOIN users_groups
                             ON users_groups.user_id = users.id
                         LEFT JOIN groups 
@@ -148,6 +161,15 @@ class Users extends MY_Controller {
                 'name' => 'password_confirm',
                 'value' => set_value('password_confirm'),
                 'class' => 'form-control ',
+            ),
+            'unit_id'=> array(
+                'attr'        => array(
+                    'id'    => 'unit_id',
+                    'class' => 'form-control ',
+                ),
+                'data'     => $this->opt_unit_id,
+                'value'   => set_value('unit_id'),
+                'name'     => 'unit_id',
             ),
             'group_id'=> array(
                     'attr'        => array(
@@ -234,6 +256,15 @@ class Users extends MY_Controller {
                     'data'     => $this->opt_group_id,
                     'value'   => $this->val[0]['group_id'],
                     'name'     => 'group_id',
+            ),
+            'unit_id'=> array(
+                'attr'        => array(
+                    'id'    => 'unit_id',
+                    'class' => 'form-control ',
+                ),
+                'data'     => $this->opt_unit_id,
+                'value'   => $this->val[0]['unit_id'],
+                'name'     => 'unit_id',
             ),
             'active'=> array(
                     'attr'        => array(

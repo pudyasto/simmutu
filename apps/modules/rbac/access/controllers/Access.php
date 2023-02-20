@@ -232,6 +232,7 @@ class Access extends CI_Controller {
             'name' => $user->full_name,
             'email' => $user->email,
             'groupid' => $user_groups->id,
+            'unitid' => $user->unit_id,
             'group_name' => $user_groups->name,
             'userid' => $user->id,
             'platform' => $this->agent->platform(),

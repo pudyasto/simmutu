@@ -70,6 +70,16 @@ echo form_open($submit, $attributes);
         <?=form_error('password_confirm', '<div class="note">', '</div>');?>
     </div>
     
+    <div class="col-sm-12" style="z-index: 401;">
+        <?=form_label('Pilih Unit Pelayanan', '', array('class' => '',));?>
+        <div class="input-group">
+            <div class="form-line">
+                <?=form_dropdown($form['unit_id']['name'], $form['unit_id']['data'], $form['unit_id']['value'], $form['unit_id']['attr']);?>
+            </div>
+        </div>
+        <?=form_error('unit_id', '<div class="note">', '</div>');?>
+    </div>
+    
     <div class="col-sm-12" style="z-index: 400;">
         <?=form_label('Pilih Grup Pengguna', '', array('class' => '',));?>
         <div class="input-group">

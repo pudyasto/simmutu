@@ -34,6 +34,12 @@ class Indikator_qry extends CI_Model {
     }
 
     public function get_m_unit() {
+
+        
+        if($this->session->userdata('unitid')){
+            $this->db->where('id', $this->session->userdata('unitid'));
+        }
+        
         $query = $this->db->get('m_unit');
         return $query->result_array();
     }

@@ -76,6 +76,7 @@
                             <thead>
                                 <tr>
                                     <th style="text-align: center;">ID</th>
+                                    <th style="min-width: 120px;width: 100px;text-align: center;">Unit Pelayanan</th>
                                     <th style="text-align: center;">Nama Lengkap</th>
                                     <th style="text-align: center;">Email</th>
                                     <th style="min-width: 100px;width: 100px;text-align: center;">Grup</th>
@@ -88,6 +89,7 @@
                             <tfoot>
                                 <tr>
                                     <th>ID</th>
+                                    <th>Unit Pelayanan</th>
                                     <th>Nama Lengkap</th>
                                     <th>Email</th>
                                     <th>Grup</th>
@@ -184,6 +186,9 @@
                     return ' \n <input type="checkbox" value="' + data + '" name="checkable" id="basic_checkbox_' + data + '" class="m-checkable filled-in chk-col-red" />' +
                             ' \n <label class="chk-datatable" for="basic_checkbox_' + data + '"></label>';
                 }
+            },
+            {"data": "unitname",
+                render: $.fn.dataTable.render.text()
             },
             {"data": "full_name",
                 render: $.fn.dataTable.render.text()

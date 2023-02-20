@@ -27,6 +27,12 @@ class Users_qry extends CI_Model {
         parent::__construct();
     }
     
+    public function ref_mstunit() {
+        $this->db->order_by('nama','ASC');
+        $query = $this->db->get('m_unit');
+        return $query->result_array();
+    }
+    
     public function ref_mstgroup() {
         $this->db->order_by('name','ASC');
         $query = $this->db->get('groups');
@@ -42,6 +48,7 @@ class Users_qry extends CI_Model {
                         , users.full_name
                         , users_groups.group_id
                         , users.active
+                        , users.unit_id
                       FROM users
                         LEFT JOIN users_groups
                             ON users_groups.user_id = users.id
@@ -59,6 +66,7 @@ class Users_qry extends CI_Model {
                     $email = $this->input->post('email');
                     $additional_data = array(
                                             'full_name' => $this->input->post('full_name'),
+                                            'unit_id' => ($this->input->post('unit_id')) ? $this->input->post('unit_id') : null,
                                             );
                     $group_id =  $this->input->post('group_id');
                     $group = array($group_id); // Sets user to admin.
@@ -81,6 +89,7 @@ class Users_qry extends CI_Model {
                     $user_id = $this->input->post('id');
                     $data = array(
                         'full_name' => $this->input->post('full_name'),
+                        'unit_id' => ($this->input->post('unit_id')) ? $this->input->post('unit_id') : null,
                         'username' => $this->input->post('username'),
                         'email' => $this->input->post('email'),
                         'active' => $this->input->post('active'),
