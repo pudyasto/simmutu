@@ -81,6 +81,45 @@ class Main_qry extends CI_Model {
         return $res;
     }
 
+    public function get_unit_mutu_per_bulan() {
+        $unit_id = ($this->input->get('unit_id')) ? $this->input->get('unit_id') : '1';
+        $periode = $this->input->get('periode');
+        $days = 0;
+        if($periode){
+            $mY = explode("-", $periode);
+            $month = $mY[0];
+            $year = $mY[1];
+            $days = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        }
+        
+        $str = "SELECT 
+                    m_indikator.id AS indikator_id,
+                    m_indikator.nama AS nama_indikator,
+                    m_unit.id AS unit_id,
+                    AVG(ROUND((trn_indikator.num / trn_indikator.denum) * 100)) AS hasil
+                FROM
+                    m_unit
+                        LEFT JOIN
+                    m_indikator ON m_unit.id = m_indikator.unit_id
+                        LEFT JOIN
+                    (SELECT 
+                        *
+                    FROM
+                        trn_indikator
+                    WHERE
+                        DATE_FORMAT(tgl_tran, '%m-%Y') = '{$periode}') trn_indikator ON m_indikator.id = trn_indikator.indikator_id
+                WHERE
+                    m_indikator.stat = 'Aktif'
+                    AND m_unit.id = '{$unit_id}'
+                GROUP BY m_indikator.id , m_unit.id, m_indikator.nama ";
+        $qry = $this->db->query($str);
+        if ($qry->num_rows() > 0) {
+            return $qry->result_array();
+        } else {
+            return false;
+        }
+    }
+
     public function get_unit_mutu_avg() {
         $order = $this->input->get('order');
         $periode = $this->input->get('periode');

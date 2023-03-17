@@ -13,7 +13,7 @@
         </div>
     </div>
 </div>
-<div class="row clearfix">
+<div class="row clearfix" style="display: none;">
     <div class="col-lg-3 col-md-3 col-sm-6 col-xs-12">
         <div class="info-box bg-pink hover-expand-effect">
             <div class="icon">
@@ -21,7 +21,7 @@
             </div>
             <div class="content">
                 <div class="text">JUMLAH UNIT PELAYANAN</div>
-                <div class="h4 jml_unit" ><?= $wiget_top['jml_unit']; ?></div>
+                <div class="h4 jml_unit"><?= $wiget_top['jml_unit']; ?></div>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
             </div>
             <div class="content">
                 <div class="text">NILAI MUTU SEMUA UNIT</div>
-                <div class="h4 avg_all_unit" ><?= $wiget_top['avg_all_unit']; ?></div>
+                <div class="h4 avg_all_unit"><?= $wiget_top['avg_all_unit']; ?></div>
             </div>
         </div>
     </div>
@@ -54,13 +54,26 @@
             </div>
             <div class="content">
                 <div class="text">PERIODE AKTIF</div>
-                <div class="h4 periode_nilai" ><?= $wiget_top['periode_nilai']; ?></div>
+                <div class="h4 periode_nilai"><?= $wiget_top['periode_nilai']; ?></div>
             </div>
         </div>
     </div>
 </div>
 <!-- #END# Widgets -->
 <div class="row clearfix">
+    <div class="col-xs-12 col-sm-12">
+        <div class="card">
+            <div class="header">
+                <h2>GRAFIK PENILAIAN MUTU UNIT PER BULAN</h2>
+            </div>
+            <div class="body">
+                <div style="height:40vh;">
+                    <canvas id="bar-unit-month"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Task Info -->
     <div class="col-xs-12 col-sm-12 col-md-7 col-lg-7">
         <div class="card">
@@ -73,7 +86,7 @@
                         <thead>
                             <tr>
                                 <th style="width: 10px;">#</th>
-                                <th >Unit</th>
+                                <th>Unit</th>
                                 <th style="width: 10px;">Nilai</th>
                                 <th>Progress</th>
                             </tr>
@@ -81,7 +94,7 @@
                         <tfoot>
                             <tr>
                                 <th style="width: 10px;">ID</th>
-                                <th >Unit</th>
+                                <th>Unit</th>
                                 <th style="width: 10px;">Nilai</th>
                                 <th>ID</th>
                             </tr>
@@ -107,7 +120,8 @@
         <div class="card">
             <div class="body">
                 <div class="dashboard-donut-chart">
-                    <canvas id="donut-asc-avg-unit"></canvas></div>
+                    <canvas id="donut-asc-avg-unit"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -117,30 +131,33 @@
 <!-- Chart Js -->
 <script src="<?= base_url('assets/adminbsb/plugins/chartjs/Chart.bundle.min.js'); ?>"></script>
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(document).ready(function() {
         glob_where_datatable = "";
-        $(".btn-refersh").click(function () {
+        $(".btn-refersh").click(function() {
             table.ajax.reload();
         });
 
-        var column_list = [
-            {"data": "id",
+        var column_list = [{
+                "data": "id",
                 render: $.fn.dataTable.render.text()
             },
-            {"data": "nama",
-                render: function (data, type, row) {
-                    var btn = '<a title="Lapoan Penilaian Mutu Pada Unit '+data+'"' +
-                            ' href="<?=site_url('main/mutu_unit');?>/'+row.id+'/'+row.periode+'">' +
-                            data +
-                            '</a>';
+            {
+                "data": "nama",
+                render: function(data, type, row) {
+                    var btn = '<a title="Lapoan Penilaian Mutu Pada Unit ' + data + '"' +
+                        ' href="<?= site_url('main/mutu_unit'); ?>/' + row.id + '/' + row.periode + '">' +
+                        data +
+                        '</a>';
                     return btn;
                 }
             },
-            {"data": "hasil_all",
+            {
+                "data": "hasil_all",
                 render: $.fn.dataTable.render.text()
             },
-            {"data": "hasil_all",
-                render: function (data, type, row) {
+            {
+                "data": "hasil_all",
+                render: function(data, type, row) {
                     var bg = 'bg-blue';
                     if (data >= 0 && data < 25) {
                         bg = 'bg-red';
@@ -152,35 +169,42 @@
                         bg = 'bg-blue';
                     }
                     var btn = '<div class="progress">' +
-                            '<div class="progress-bar ' + bg + '" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%"></div>' +
-                            '</div>';
+                        '<div class="progress-bar ' + bg + '" role="progressbar" aria-valuenow="' + data + '" aria-valuemin="0" aria-valuemax="100" style="width: ' + data + '%"></div>' +
+                        '</div>';
                     return btn;
                 }
             }
         ];
 
-        var column_def = [
-            {
-                "orderable": true,
-                "targets": 0,
-                "width": "10px"
-            }
+        var column_def = [{
+            "orderable": true,
+            "targets": 0,
+            "width": "10px"
+        }];
+        var orders = [
+            [0, "asc"]
         ];
-        var orders = [[0, "asc"]];
         set_datatable('dataTable', "<?= site_url('main/json_dgview_avg_unit'); ?>", column_list, column_def, null, orders, null, null, null, null, null, null);
         get_data_table();
         get_unit_mutu_avg_desc();
         get_unit_mutu_avg_asc();
         get_widget_top();
+        get_unit_mutu_per_bulan();
+
         function get_data_table() {
-            glob_where_datatable = [
-                {"name": "unit_id", "value": $("#unit_id").val()}
-                ,{"name": "periode", "value": $("#periode").val()}
-                
+            glob_where_datatable = [{
+                    "name": "unit_id",
+                    "value": $("#unit_id").val()
+                }, {
+                    "name": "periode",
+                    "value": $("#periode").val()
+                }
+
             ];
             table.ajax.reload();
         }
-        $('#periode').on("changeDate", function (e) {
+        $('#periode').on("changeDate", function(e) {
+            get_unit_mutu_per_bulan();
             get_unit_mutu_avg_desc();
             get_unit_mutu_avg_asc();
             get_data_table();
@@ -193,12 +217,13 @@
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_widget_top'); ?>",
-            data: {"periode": periode
+            data: {
+                "periode": periode
             },
-            beforeSend: function () {
-                
+            beforeSend: function() {
+
             },
-            success: function (resp) {
+            success: function(resp) {
                 if (resp) {
                     var obj = jQuery.parseJSON(resp);
                     $(".jml_unit").html(obj.jml_unit);
@@ -207,7 +232,91 @@
                     $(".periode_nilai").html(obj.periode_nilai);
                 }
             },
-            error: function (event, textStatus, errorThrown) {
+            error: function(event, textStatus, errorThrown) {
+                console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
+            }
+        });
+    }
+
+    function get_unit_mutu_per_bulan() {
+        var periode = $("#periode").val();
+        $.ajax({
+            type: "GET",
+            url: "<?= site_url('main/get_unit_mutu_per_bulan'); ?>",
+            data: {
+                "order": 'desc',
+                "periode": periode
+            },
+            beforeSend: function() {
+
+            },
+            success: function(resp) {
+                if (resp) {
+                    var obj = jQuery.parseJSON(resp);
+                    var PDataNilai = [];
+                    var PLabel = [];
+                    $.each(obj, function(key, data) {
+                        PDataNilai.push(data.hasil);
+                        PLabel.push(data.nama_indikator);
+                    });
+                    var chartOpt = {
+                        //Boolean - Whether we should show a stroke on each segment
+                        segmentShowStroke: true,
+                        //String - The colour of each segment stroke
+                        segmentStrokeColor: '#fff',
+                        //Number - The width of each segment stroke
+                        segmentStrokeWidth: 1,
+                        //Number - The percentage of the chart that we cut out of the middle
+                        percentageInnerCutout: 0, // This is 0 for Pie charts
+                        //Number - Amount of animation steps
+                        animationSteps: 100,
+                        //String - Animation easing effect
+                        animationEasing: 'easeOutBounce',
+                        //Boolean - Whether we animate the rotation of the Doughnut
+                        animateRotate: true,
+                        //Boolean - Whether we animate scaling the Doughnut from the centre
+                        animateScale: false,
+                        //Boolean - whether to make the chart responsive to window resizing
+                        responsive: true,
+                        // Boolean - whether to maintain the starting aspect ratio or not when responsive, if set to false, will take up entire container
+                        maintainAspectRatio: false,
+                        //String - A legend template
+                        legendTemplate: '<ul class="<%=name.toLowerCase()%>-legend"><% for (var i=0; i<segments.length; i++){%><li><span style="background-color:<%=segments[i].fillColor%>"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>',
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            fontSize: 24,
+                            boxWidth: 100
+                        },
+                        title: {
+                            display: true,
+                            text: 'GRAFIK INDIKATOR MUTU UNIT'
+                        },
+                    };
+
+                    var config = {
+                        type: 'line',
+                        data: {
+                            datasets: [{
+                                label: 'Unit Arumanis 1',
+                                fill: false,
+                                data: PDataNilai,
+                                borderColor: window.chartArrayColors[0],
+                                backgroundColor: window.chartArrayColors[0],
+                            }],
+                            labels: PLabel
+                        },
+                        options: chartOpt
+                    };
+                    var my_chart = $('#bar-unit-month').get(0).getContext('2d');
+                    if (typeof bar_unit_month != 'undefined') {
+                        bar_unit_month.destroy();
+                    }
+                    bar_unit_month = new Chart(my_chart, config);
+                    console.log(obj);
+                }
+            },
+            error: function(event, textStatus, errorThrown) {
                 console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
             }
         });
@@ -219,18 +328,18 @@
             type: "GET",
             url: "<?= site_url('main/get_unit_mutu_avg'); ?>",
             data: {
-                "order": 'desc'
-                ,"periode": periode
+                "order": 'desc',
+                "periode": periode
             },
-            beforeSend: function () {
-                
+            beforeSend: function() {
+
             },
-            success: function (resp) {
+            success: function(resp) {
                 if (resp) {
                     var obj = jQuery.parseJSON(resp);
                     var PDataNilai = [];
                     var PLabel = [];
-                    $.each(obj, function (key, data) {
+                    $.each(obj, function(key, data) {
                         PDataNilai.push(data.hasil_all);
                         PLabel.push(data.nama);
                     });
@@ -276,9 +385,9 @@
                         type: 'pie',
                         data: {
                             datasets: [{
-                                    data: PDataNilai,
-                                    backgroundColor: window.chartArrayColors,
-                                }],
+                                data: PDataNilai,
+                                backgroundColor: window.chartArrayColors,
+                            }],
                             labels: PLabel
                         },
                         options: chartOpt
@@ -290,7 +399,7 @@
                     chart_donut_unit_desc = new Chart(my_chart, config);
                 }
             },
-            error: function (event, textStatus, errorThrown) {
+            error: function(event, textStatus, errorThrown) {
                 console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
             }
         });
@@ -301,18 +410,19 @@
         $.ajax({
             type: "GET",
             url: "<?= site_url('main/get_unit_mutu_avg'); ?>",
-            data: {"order": 'asc'
-                ,"periode": periode
+            data: {
+                "order": 'asc',
+                "periode": periode
             },
-            beforeSend: function () {
-                
+            beforeSend: function() {
+
             },
-            success: function (resp) {
+            success: function(resp) {
                 if (resp) {
                     var obj = jQuery.parseJSON(resp);
                     var PDataNilai = [];
                     var PLabel = [];
-                    $.each(obj, function (key, data) {
+                    $.each(obj, function(key, data) {
                         PDataNilai.push(data.hasil_all);
                         PLabel.push(data.nama);
                     });
@@ -358,9 +468,9 @@
                         type: 'pie',
                         data: {
                             datasets: [{
-                                    data: PDataNilai,
-                                    backgroundColor: window.chartArrayColors,
-                                }],
+                                data: PDataNilai,
+                                backgroundColor: window.chartArrayColors,
+                            }],
                             labels: PLabel
                         },
                         options: chartOpt
@@ -372,7 +482,7 @@
                     chart_donut_unit = new Chart(my_chart, config);
                 }
             },
-            error: function (event, textStatus, errorThrown) {
+            error: function(event, textStatus, errorThrown) {
                 console.log("Error !", 'Error Message: ' + textStatus + ' , HTTP Error: ' + errorThrown, "error");
             }
         });

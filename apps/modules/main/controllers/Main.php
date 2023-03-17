@@ -54,6 +54,11 @@ class Main extends MY_Controller {
         echo json_encode($res);
     }
     
+    public function get_unit_mutu_per_bulan() {
+        $res = $this->main_qry->get_unit_mutu_per_bulan();
+        echo json_encode($res);
+    }
+    
     public function get_unit_mutu_avg() {
         $res = $this->main_qry->get_unit_mutu_avg();
         echo json_encode($res);
@@ -107,7 +112,7 @@ class Main extends MY_Controller {
     private function _init_add($periode = null){
         $this->data['form'] = array(
            'periode'=> array(
-                    'placeholder' => 'Periode',
+                    'placeholder' => 'Periode per Bulan',
                     'id'          => 'periode',
                     'name'        => 'periode',
                     'class'       => 'form-control month',
